@@ -200,6 +200,13 @@ export const tools: Tool[] = [
     href: "/pdf/sign",
     color: "#667EEA", // 파랑보라
   },
+  {
+    id: "fill_form",
+    name: "양식 채우기",
+    category: "edit",
+    href: "/pdf/form",
+    color: "#9F7AEA", // 보라
+  },
 
   // 기타 도구 (other)
   {
