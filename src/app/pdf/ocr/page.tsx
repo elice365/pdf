@@ -60,10 +60,10 @@ interface OcrResponse {
   pages: OcrPageResult[];
 }
 
-type PdfJsLib = typeof import("pdfjs-dist/legacy/build/pdf");
+type PdfJsLib = typeof import("pdfjs-dist");
 
 async function loadPdfjs(): Promise<PdfJsLib> {
-  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf");
+  const pdfjsLib = await import("pdfjs-dist");
   if (pdfjsLib.GlobalWorkerOptions) {
     pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER_SRC;
   }
@@ -85,6 +85,7 @@ async function renderPageToCanvas(page: PDFPageProxy, scale = PDF_RENDER_SCALE) 
   await page.render({
     canvasContext: context,
     viewport,
+    canvas,
   }).promise;
 
   return canvas;

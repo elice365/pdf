@@ -78,6 +78,7 @@ export default function PdfToPowerPointPage() {
         await page.render({
           canvasContext: context,
           viewport: viewport,
+          canvas: canvas,
         }).promise;
 
         // 캔버스를 이미지 데이터로 변환
