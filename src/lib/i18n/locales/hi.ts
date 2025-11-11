@@ -25,6 +25,17 @@ export const hi = {
       "PDF मर्ज, PDF स्प्लिट, PDF कंप्रेस, Office से PDF, PDF से JPG और बहुत कुछ!",
   },
 
+  // Categories
+  categories: {
+    all: "सभी PDF टूल",
+    organize: "PDF व्यवस्थित करें",
+    optimize: "PDF अनुकूलित करें",
+    convert: "PDF रूपांतरित करें",
+    edit: "PDF संपादित करें",
+    security: "PDF सुरक्षा",
+    other: "अन्य टूल",
+  },
+
   // Tool Names
   tools: {
     merge: "PDF मर्ज करें",
@@ -54,6 +65,14 @@ export const hi = {
     jpgToPdf: "JPG से PDF",
     htmlToPdf: "HTML से PDF",
     pdfToPdfA: "PDF से PDF/A",
+    pdfToPng: "PDF से PNG",
+    pngToPdf: "PNG से PDF",
+    fillForm: "फ़ॉर्म भरें",
+    addText: "टेक्स्ट जोड़ें",
+    extractText: "टेक्स्ट निकालें",
+    extractImages: "छवियां निकालें",
+    resize: "PDF का आकार बदलें",
+    metadata: "मेटाडेटा संपादित करें",
   },
 
   // Tool Descriptions

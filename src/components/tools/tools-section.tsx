@@ -1,11 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { FilterTabs } from "./filter-tabs";
 import { ToolCard } from "./tool-card";
 import type { ToolCategory } from "./tools-data";
-import { tools } from "./tools-data";
+import { getLocalizedTools } from "@/lib/get-localized-tools";
+import { useLocale } from "@/components/providers/locale-provider";
 
 // 애니메이션 variants
 const containerVariants = {
@@ -35,7 +36,11 @@ const itemVariants = {
 };
 
 export function ToolsSection() {
+  const { locale } = useLocale();
   const [activeCategory, setActiveCategory] = useState<ToolCategory>("all");
+
+  // Get localized tools based on current locale
+  const tools = useMemo(() => getLocalizedTools(locale), [locale]);
 
   const filteredTools =
     activeCategory === "all"

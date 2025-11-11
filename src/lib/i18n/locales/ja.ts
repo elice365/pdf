@@ -25,6 +25,17 @@ export const ja = {
       "PDF結合、PDF分割、PDF圧縮、OfficeからPDF、PDFからJPGへの変換など！",
   },
 
+  // Categories
+  categories: {
+    all: "すべてのPDFツール",
+    organize: "PDF整理",
+    optimize: "PDF最適化",
+    convert: "PDF変換",
+    edit: "PDF編集",
+    security: "PDFセキュリティ",
+    other: "その他のツール",
+  },
+
   // Tool Names
   tools: {
     merge: "PDF結合",
@@ -54,6 +65,14 @@ export const ja = {
     jpgToPdf: "JPGからPDF",
     htmlToPdf: "HTMLからPDF",
     pdfToPdfA: "PDFからPDF/A",
+    pdfToPng: "PDFからPNG",
+    pngToPdf: "PNGからPDF",
+    fillForm: "フォーム入力",
+    addText: "テキスト追加",
+    extractText: "テキスト抽出",
+    extractImages: "画像抽出",
+    resize: "PDFサイズ変更",
+    metadata: "メタデータ編集",
   },
 
   // Tool Descriptions

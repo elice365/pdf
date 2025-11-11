@@ -26,6 +26,17 @@ export const ko = {
       "PDF 병합, PDF 나누기, PDF 압축, 오피스 파일에서 PDF로, PDF에서 JPG로 변환 등!",
   },
 
+  // Categories
+  categories: {
+    all: "모든 PDF 도구",
+    organize: "PDF 구성",
+    optimize: "PDF 최적화",
+    convert: "PDF 변환",
+    edit: "PDF 편집",
+    security: "PDF 보안",
+    other: "기타 도구",
+  },
+
   // Tool Names
   tools: {
     merge: "PDF 합치기",
@@ -55,6 +66,14 @@ export const ko = {
     jpgToPdf: "JPG를 PDF로",
     htmlToPdf: "HTML을 PDF로",
     pdfToPdfA: "PDF를 PDF/A로",
+    pdfToPng: "PDF를 PNG로",
+    pngToPdf: "PNG를 PDF로",
+    fillForm: "양식 채우기",
+    addText: "텍스트 추가",
+    extractText: "텍스트 추출",
+    extractImages: "이미지 추출",
+    resize: "PDF 크기 조정",
+    metadata: "메타데이터 편집",
   },
 
   // Tool Descriptions

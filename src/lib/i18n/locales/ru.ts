@@ -25,6 +25,17 @@ export const ru = {
       "Объединение PDF, разделение PDF, сжатие PDF, Office в PDF, PDF в JPG и многое другое!",
   },
 
+  // Categories
+  categories: {
+    all: "Все инструменты PDF",
+    organize: "Организация PDF",
+    optimize: "Оптимизация PDF",
+    convert: "Конвертация PDF",
+    edit: "Редактирование PDF",
+    security: "Безопасность PDF",
+    other: "Другие инструменты",
+  },
+
   // Tool Names
   tools: {
     merge: "Объединить PDF",
@@ -54,6 +65,14 @@ export const ru = {
     jpgToPdf: "JPG в PDF",
     htmlToPdf: "HTML в PDF",
     pdfToPdfA: "PDF в PDF/A",
+    pdfToPng: "PDF в PNG",
+    pngToPdf: "PNG в PDF",
+    fillForm: "Заполнить форму",
+    addText: "Добавить текст",
+    extractText: "Извлечь текст",
+    extractImages: "Извлечь изображения",
+    resize: "Изменить размер PDF",
+    metadata: "Редактировать метаданные",
   },
 
   // Tool Descriptions

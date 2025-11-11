@@ -25,6 +25,17 @@ export const en = {
       "Merge PDF, split PDF, compress PDF, office to PDF, PDF to JPG and more!",
   },
 
+  // Categories
+  categories: {
+    all: "All PDF tools",
+    organize: "Organize PDF",
+    optimize: "Optimize PDF",
+    convert: "Convert PDF",
+    edit: "Edit PDF",
+    security: "PDF Security",
+    other: "Other tools",
+  },
+
   // Tool Names
   tools: {
     merge: "Merge PDF",
@@ -54,6 +65,14 @@ export const en = {
     jpgToPdf: "JPG to PDF",
     htmlToPdf: "HTML to PDF",
     pdfToPdfA: "PDF to PDF/A",
+    pdfToPng: "PDF to PNG",
+    pngToPdf: "PNG to PDF",
+    fillForm: "Fill Form",
+    addText: "Add Text",
+    extractText: "Extract Text",
+    extractImages: "Extract Images",
+    resize: "Resize PDF",
+    metadata: "Edit Metadata",
   },
 
   // Tool Descriptions

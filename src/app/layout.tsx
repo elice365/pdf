@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Noto_Sans_KR } from "next/font/google";
 import { ClarityAnalytics } from "@/components/analytics/clarity-analytics";
 import { ReduxProvider } from "@/components/providers/redux-provider";
+import { LocaleProvider } from "@/components/providers/locale-provider";
 import { OrganizationJsonLd } from "@/components/seo/organization-jsonld";
 import { WebApplicationJsonLd } from "@/components/seo/web-application-jsonld";
 import { WebSiteJsonLd } from "@/components/seo/website-jsonld";
@@ -137,7 +138,9 @@ export default function RootLayout({
         className={`${notoSansKR.variable} ${geistMono.variable} antialiased`}
       >
         <ClarityAnalytics />
-        <ReduxProvider>{children}</ReduxProvider>
+        <LocaleProvider initialLocale="ko">
+          <ReduxProvider>{children}</ReduxProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

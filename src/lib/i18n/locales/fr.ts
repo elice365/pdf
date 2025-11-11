@@ -25,6 +25,17 @@ export const fr = {
       "Fusionner PDF, diviser PDF, compresser PDF, Office vers PDF, PDF vers JPG et plus encore!",
   },
 
+  // Categories
+  categories: {
+    all: "Tous les outils PDF",
+    organize: "Organiser PDF",
+    optimize: "Optimiser PDF",
+    convert: "Convertir PDF",
+    edit: "Modifier PDF",
+    security: "Sécurité PDF",
+    other: "Autres outils",
+  },
+
   // Tool Names
   tools: {
     merge: "Fusionner PDF",
@@ -54,6 +65,14 @@ export const fr = {
     jpgToPdf: "JPG vers PDF",
     htmlToPdf: "HTML vers PDF",
     pdfToPdfA: "PDF vers PDF/A",
+    pdfToPng: "PDF vers PNG",
+    pngToPdf: "PNG vers PDF",
+    fillForm: "Remplir formulaire",
+    addText: "Ajouter du texte",
+    extractText: "Extraire le texte",
+    extractImages: "Extraire les images",
+    resize: "Redimensionner PDF",
+    metadata: "Modifier les métadonnées",
   },
 
   // Tool Descriptions

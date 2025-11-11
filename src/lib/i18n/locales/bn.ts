@@ -25,6 +25,17 @@ export const bn = {
       "PDF মার্জ, PDF স্প্লিট, PDF কম্প্রেস, Office থেকে PDF, PDF থেকে JPG এবং আরও অনেক কিছু!",
   },
 
+  // Categories
+  categories: {
+    all: "সমস্ত PDF টুল",
+    organize: "PDF সংগঠিত করুন",
+    optimize: "PDF অপ্টিমাইজ করুন",
+    convert: "PDF রূপান্তর করুন",
+    edit: "PDF সম্পাদনা করুন",
+    security: "PDF নিরাপত্তা",
+    other: "অন্যান্য টুল",
+  },
+
   // Tool Names
   tools: {
     merge: "PDF মার্জ করুন",
@@ -54,6 +65,14 @@ export const bn = {
     jpgToPdf: "JPG থেকে PDF",
     htmlToPdf: "HTML থেকে PDF",
     pdfToPdfA: "PDF থেকে PDF/A",
+    pdfToPng: "PDF থেকে PNG",
+    pngToPdf: "PNG থেকে PDF",
+    fillForm: "ফর্ম পূরণ করুন",
+    addText: "টেক্সট যোগ করুন",
+    extractText: "টেক্সট বের করুন",
+    extractImages: "ছবি বের করুন",
+    resize: "PDF আকার পরিবর্তন করুন",
+    metadata: "মেটাডেটা সম্পাদনা করুন",
   },
 
   // Tool Descriptions

@@ -25,6 +25,17 @@ export const de = {
       "PDF zusammenführen, PDF teilen, PDF komprimieren, Office zu PDF, PDF zu JPG und mehr!",
   },
 
+  // Categories
+  categories: {
+    all: "Alle PDF-Tools",
+    organize: "PDF organisieren",
+    optimize: "PDF optimieren",
+    convert: "PDF konvertieren",
+    edit: "PDF bearbeiten",
+    security: "PDF-Sicherheit",
+    other: "Andere Tools",
+  },
+
   // Tool Names
   tools: {
     merge: "PDF zusammenführen",
@@ -54,6 +65,14 @@ export const de = {
     jpgToPdf: "JPG zu PDF",
     htmlToPdf: "HTML zu PDF",
     pdfToPdfA: "PDF zu PDF/A",
+    pdfToPng: "PDF zu PNG",
+    pngToPdf: "PNG zu PDF",
+    fillForm: "Formular ausfüllen",
+    addText: "Text hinzufügen",
+    extractText: "Text extrahieren",
+    extractImages: "Bilder extrahieren",
+    resize: "PDF-Größe ändern",
+    metadata: "Metadaten bearbeiten",
   },
 
   // Tool Descriptions

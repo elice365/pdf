@@ -6,6 +6,7 @@ import { AuthButtons } from "./auth-buttons";
 import { Logo } from "./logo";
 import { MobileMenu } from "./mobile-menu";
 import { Navigation } from "./navigation";
+import { LocaleSwitcher } from "@/components/locale/locale-switcher";
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -22,8 +23,9 @@ export function Header() {
             <Navigation />
           </div>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden lg:flex items-center gap-4">
+          {/* Desktop Auth Buttons & Locale Switcher */}
+          <div className="hidden lg:flex items-center gap-2">
+            <LocaleSwitcher />
             <AuthButtons />
           </div>
 

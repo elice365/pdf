@@ -1,16 +1,18 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/components/providers/locale-provider";
 import type { ToolCategory } from "./tools-data";
 
-const categories = [
-  { id: "all", label: "전체", color: null },
-  { id: "organize", label: "PDF 구성", color: "#E5322D" },
-  { id: "convert", label: "PDF 변환", color: "#F6BD60" },
-  { id: "edit", label: "PDF 편집", color: "#F7B801" },
-  { id: "security", label: "PDF 보안", color: "#AE7FA7" },
-  { id: "optimize", label: "PDF 관리", color: "#98D8C8" },
-] as const;
+const categoryColors = {
+  all: null,
+  organize: "#E5322D",
+  convert: "#F6BD60",
+  edit: "#F7B801",
+  security: "#AE7FA7",
+  optimize: "#98D8C8",
+  other: "#68D391",
+} as const;
 
 interface FilterTabsProps {
   activeCategory: ToolCategory;
@@ -21,23 +23,28 @@ export function FilterTabs({
   activeCategory,
   onCategoryChange,
 }: FilterTabsProps) {
+  const { t } = useLocale();
+  const categories = Object.keys(categoryColors) as ToolCategory[];
+
   return (
     <div
       className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide"
       role="tablist"
-      aria-label="PDF 도구 카테고리 필터"
+      aria-label="PDF tool category filter"
     >
-      {categories.map((category) => {
-        const isActive = activeCategory === category.id;
+      {categories.map((categoryId) => {
+        const isActive = activeCategory === categoryId;
+        const color = categoryColors[categoryId];
+        const label = t.categories[categoryId as keyof typeof t.categories];
 
         return (
           <button
-            key={category.id}
+            key={categoryId}
             type="button"
             role="tab"
             aria-selected={isActive}
             aria-controls="tools-grid"
-            onClick={() => onCategoryChange(category.id as ToolCategory)}
+            onClick={() => onCategoryChange(categoryId)}
             className={cn(
               "px-6 py-3 rounded-full text-sm font-medium whitespace-nowrap transition-all",
               "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
@@ -46,9 +53,9 @@ export function FilterTabs({
                 : "bg-surface dark:bg-surface/50 hover:bg-surface/80 dark:hover:bg-surface/70 text-foreground dark:text-foreground",
             )}
             style={
-              isActive && category.color
-                ? { backgroundColor: category.color, color: "#ffffff" }
-                : isActive && !category.color
+              isActive && color
+                ? { backgroundColor: color, color: "#ffffff" }
+                : isActive && !color
                   ? {
                       backgroundColor: "var(--color-primary)",
                       color: "var(--color-primary-foreground)",
@@ -56,7 +63,7 @@ export function FilterTabs({
                   : undefined
             }
           >
-            {category.label}
+            {label}
           </button>
         );
       })}
