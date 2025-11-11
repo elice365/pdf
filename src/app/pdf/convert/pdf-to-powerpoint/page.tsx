@@ -1,9 +1,11 @@
 "use client";
 
-import { ArrowLeft, Presentation } from "lucide-react";
+import { ArrowLeft, Presentation, Download } from "lucide-react";
 import Link from "next/link";
 import { PDFDocument } from "pdf-lib";
 import { useState } from "react";
+import * as pdfjsLib from "pdfjs-dist";
+import pptxgen from "pptxgenjs";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
 import { Button } from "@/components/ui/button";
@@ -17,11 +19,15 @@ import {
   setProgress,
 } from "@/store/slices/pdfSlice";
 
+// PDF.js worker 설정
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
 export default function PdfToPowerPointPage() {
   const dispatch = useAppDispatch();
   const { files } = useAppSelector((state) => state.pdf);
   const [pageCount, setPageCount] = useState<number>(0);
   const [completed, setCompleted] = useState<boolean>(false);
+  const [pptxBlob, setPptxBlob] = useState<Blob | null>(null);
 
   const handleConvert = async () => {
     if (files.length === 0) {
@@ -36,20 +42,66 @@ export default function PdfToPowerPointPage() {
 
       const file = files[0];
       const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
 
-      dispatch(setProgress(40));
+      dispatch(setProgress(20));
 
-      const pages = pdfDoc.getPageCount();
-      setPageCount(pages);
+      // PDF 문서 로드
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdfDoc = await loadingTask.promise;
 
-      dispatch(setProgress(70));
+      dispatch(setProgress(30));
 
-      // Note: PDF to PowerPoint conversion requires server-side processing
-      // This is a client-side demo that shows UI but doesn't actually convert
-      // In production, this would use pdf2pptx or similar on server
-      // Each page becomes a slide with preserved layout
+      const totalPages = pdfDoc.numPages;
+      setPageCount(totalPages);
 
+      // PowerPoint 프레젠테이션 생성
+      const ppt = new pptxgen();
+
+      // 각 페이지를 이미지로 변환하여 슬라이드에 추가
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const page = await pdfDoc.getPage(pageNum);
+
+        dispatch(setProgress(30 + (pageNum / totalPages) * 60));
+
+        // 페이지를 캔버스로 렌더링
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+          throw new Error("Canvas context not available");
+        }
+
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({
+          canvasContext: context,
+          viewport: viewport,
+        }).promise;
+
+        // 캔버스를 이미지 데이터로 변환
+        const imageData = canvas.toDataURL("image/png");
+
+        // 슬라이드 추가
+        const slide = ppt.addSlide();
+
+        // 이미지를 슬라이드에 추가 (전체 슬라이드 크기)
+        slide.addImage({
+          data: imageData,
+          x: 0,
+          y: 0,
+          w: "100%",
+          h: "100%",
+        });
+      }
+
+      dispatch(setProgress(95));
+
+      // PowerPoint 파일 생성
+      const blob = await ppt.write({ outputType: "blob" }) as Blob;
+
+      setPptxBlob(blob);
       setCompleted(true);
 
       dispatch(setProgress(100));
@@ -61,10 +113,23 @@ export default function PdfToPowerPointPage() {
     }
   };
 
+  const handleDownload = () => {
+    if (!pptxBlob) return;
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(pptxBlob);
+    link.download = files[0]?.name.replace(/\.pdf$/i, ".pptx") || "converted.pptx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  };
+
   const handleReset = () => {
     dispatch(resetState());
     setPageCount(0);
     setCompleted(false);
+    setPptxBlob(null);
   };
 
   return (
@@ -133,9 +198,9 @@ export default function PdfToPowerPointPage() {
           {completed && (
             <Card className="p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
                   <Presentation
-                    className="w-5 h-5 text-success"
+                    className="w-5 h-5 text-green-500"
                     aria-hidden="true"
                   />
                 </div>
@@ -149,17 +214,16 @@ export default function PdfToPowerPointPage() {
 
               <div className="p-4 bg-surface rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  실제 PDF to PowerPoint 변환은 서버 처리가 필요합니다.
+                  PDF의 각 페이지가 이미지로 변환되어 PowerPoint 슬라이드에 추가되었습니다.
                   <br />
-                  pdf2pptx 또는 유사한 라이브러리를 사용하여 서버에서 처리할 수
-                  있습니다.
-                  <br />각 페이지를 슬라이드로 변환하여 PPTX 파일로 저장합니다.
+                  슬라이드는 PPTX 형식으로 저장됩니다.
                 </p>
               </div>
 
               <div className="flex justify-center gap-3">
-                <Button disabled className="opacity-50">
-                  PowerPoint 다운로드 (서버 필요)
+                <Button onClick={handleDownload} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Download className="w-4 h-4 mr-2" />
+                  PowerPoint 다운로드
                 </Button>
                 <Button variant="outline" onClick={handleReset}>
                   다시 시작

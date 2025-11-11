@@ -1,9 +1,11 @@
 "use client";
 
-import { ArrowLeft, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, FileSpreadsheet, Download } from "lucide-react";
 import Link from "next/link";
 import { PDFDocument } from "pdf-lib";
 import { useState } from "react";
+import * as pdfjsLib from "pdfjs-dist";
+import * as XLSX from "xlsx";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
 import { Button } from "@/components/ui/button";
@@ -17,12 +19,16 @@ import {
   setProgress,
 } from "@/store/slices/pdfSlice";
 
+// PDF.js worker 설정
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
 export default function PdfToExcelPage() {
   const dispatch = useAppDispatch();
   const { files } = useAppSelector((state) => state.pdf);
   const [pageCount, setPageCount] = useState<number>(0);
   const [tableCount, setTableCount] = useState<number>(0);
   const [completed, setCompleted] = useState<boolean>(false);
+  const [excelBlob, setExcelBlob] = useState<Blob | null>(null);
 
   const handleConvert = async () => {
     if (files.length === 0) {
@@ -37,22 +43,88 @@ export default function PdfToExcelPage() {
 
       const file = files[0];
       const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
 
-      dispatch(setProgress(40));
+      dispatch(setProgress(20));
 
-      const pages = pdfDoc.getPageCount();
-      setPageCount(pages);
+      // PDF 문서 로드
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdfDoc = await loadingTask.promise;
 
-      dispatch(setProgress(70));
+      dispatch(setProgress(30));
 
-      // Note: PDF to Excel conversion requires server-side processing
-      // This is a client-side demo that shows UI but doesn't actually convert
-      // In production, this would use Tabula, Camelot, or pdfplumber on server
-      // Tables need to be detected and extracted with proper formatting
+      const totalPages = pdfDoc.numPages;
+      setPageCount(totalPages);
 
-      // Placeholder: assume 1 table per page
-      setTableCount(pages);
+      // 새 Excel 워크북 생성
+      const workbook = XLSX.utils.book_new();
+
+      // 각 페이지에서 텍스트 추출하여 시트 생성
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const page = await pdfDoc.getPage(pageNum);
+        const textContent = await page.getTextContent();
+
+        dispatch(setProgress(30 + (pageNum / totalPages) * 50));
+
+        // 텍스트 아이템을 위치 기반으로 그룹화 (간단한 테이블 감지)
+        const lines: { y: number; items: { x: number; text: string }[] }[] = [];
+
+        for (const item of textContent.items) {
+          if ("str" in item && "transform" in item) {
+            const x = item.transform[4];
+            const y = item.transform[5];
+            const text = item.str.trim();
+
+            if (!text) continue;
+
+            // 같은 y 좌표의 항목 찾기 (같은 줄)
+            let line = lines.find((l) => Math.abs(l.y - y) < 5);
+            if (!line) {
+              line = { y, items: [] };
+              lines.push(line);
+            }
+
+            line.items.push({ x, text });
+          }
+        }
+
+        // y 좌표로 정렬 (위에서 아래로)
+        lines.sort((a, b) => b.y - a.y);
+
+        // 각 줄의 항목을 x 좌표로 정렬 (왼쪽에서 오른쪽으로)
+        for (const line of lines) {
+          line.items.sort((a, b) => a.x - b.x);
+        }
+
+        // 2D 배열로 변환
+        const sheetData: string[][] = lines.map((line) =>
+          line.items.map((item) => item.text)
+        );
+
+        // 워크시트 생성
+        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+
+        // 워크북에 추가
+        XLSX.utils.book_append_sheet(
+          workbook,
+          worksheet,
+          `페이지 ${pageNum}`
+        );
+      }
+
+      dispatch(setProgress(85));
+
+      // Excel 파일로 변환
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
+
+      const blob = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      setExcelBlob(blob);
+      setTableCount(totalPages);
       setCompleted(true);
 
       dispatch(setProgress(100));
@@ -64,11 +136,24 @@ export default function PdfToExcelPage() {
     }
   };
 
+  const handleDownload = () => {
+    if (!excelBlob) return;
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(excelBlob);
+    link.download = files[0]?.name.replace(/\.pdf$/i, ".xlsx") || "converted.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  };
+
   const handleReset = () => {
     dispatch(resetState());
     setPageCount(0);
     setTableCount(0);
     setCompleted(false);
+    setExcelBlob(null);
   };
 
   return (
@@ -137,35 +222,32 @@ export default function PdfToExcelPage() {
           {completed && (
             <Card className="p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
                   <FileSpreadsheet
-                    className="w-5 h-5 text-success"
+                    className="w-5 h-5 text-green-500"
                     aria-hidden="true"
                   />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">변환 완료!</p>
                   <p className="text-sm text-muted-foreground">
-                    {pageCount}개 페이지에서 {tableCount}개의 표가
-                    발견되었습니다
+                    {pageCount}개 페이지가 {tableCount}개 시트로 변환되었습니다
                   </p>
                 </div>
               </div>
 
               <div className="p-4 bg-surface rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  실제 PDF to Excel 변환은 서버 처리가 필요합니다.
+                  PDF의 텍스트 내용이 위치 기반으로 추출되어 Excel 시트로 변환되었습니다.
                   <br />
-                  Tabula, Camelot 또는 pdfplumber를 사용하여 서버에서 처리할 수
-                  있습니다.
-                  <br />표 인식 및 셀 구조를 정확히 추출하여 XLSX 파일로
-                  변환합니다.
+                  각 페이지는 별도의 시트로 저장됩니다.
                 </p>
               </div>
 
               <div className="flex justify-center gap-3">
-                <Button disabled className="opacity-50">
-                  Excel 다운로드 (서버 필요)
+                <Button onClick={handleDownload} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Download className="w-4 h-4 mr-2" />
+                  Excel 다운로드
                 </Button>
                 <Button variant="outline" onClick={handleReset}>
                   다시 시작

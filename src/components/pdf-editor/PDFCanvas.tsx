@@ -305,11 +305,14 @@ export default function PDFCanvas({
       } else if (element.type === 'image') {
         const imageElement = element as ImageElement;
         fabric.Image.fromURL(imageElement.imageData, (img) => {
+          // 저장된 크기를 사용하고 scaleX/scaleY를 1로 설정
           img.set({
             left: imageElement.x,
             top: imageElement.y,
-            scaleX: imageElement.width / (img.width || 1),
-            scaleY: imageElement.height / (img.height || 1),
+            width: imageElement.width,
+            height: imageElement.height,
+            scaleX: 1,
+            scaleY: 1,
             opacity: imageElement.opacity ?? 1,
             angle: imageElement.rotation ?? 0,
           });
@@ -398,13 +401,26 @@ export default function PDFCanvas({
       const obj = e.target;
       if (obj && (obj as any).id) {
         const id = (obj as any).id;
+
+        // 스케일을 실제 크기로 변환
+        const actualWidth = (obj.width || 0) * (obj.scaleX || 1);
+        const actualHeight = (obj.height || 0) * (obj.scaleY || 1);
+
         const updates = {
           x: obj.left || 0,
           y: obj.top || 0,
-          width: (obj.width || 0) * (obj.scaleX || 1),
-          height: (obj.height || 0) * (obj.scaleY || 1),
+          width: actualWidth,
+          height: actualHeight,
           rotation: obj.angle || 0,
         };
+
+        // 스케일을 1로 리셋하여 다음 변형 시 정확한 계산 가능
+        obj.set({
+          width: actualWidth,
+          height: actualHeight,
+          scaleX: 1,
+          scaleY: 1,
+        });
 
         // Redux 상태 업데이트
         dispatch(updateElement({ id, updates }));
@@ -415,6 +431,7 @@ export default function PDFCanvas({
         console.log('=== 객체 이동/변형 ===');
         console.log('업데이트된 ID:', id);
         console.log('업데이트 내용:', updates);
+        console.log('ElementManager 현재 요소 개수:', elementManager.getAllElements().length);
       }
     });
 
@@ -797,10 +814,16 @@ export default function PDFCanvas({
         const maxSize = 400;
         const scale = Math.min(maxSize / (img.width || 1), maxSize / (img.height || 1), 1);
 
-        img.scale(scale);
+        const scaledWidth = (img.width || 0) * scale;
+        const scaledHeight = (img.height || 0) * scale;
+
         img.set({
           left: 100,
           top: 100,
+          width: scaledWidth,
+          height: scaledHeight,
+          scaleX: 1,
+          scaleY: 1,
         });
 
         const id = `image-${Date.now()}`;
@@ -817,14 +840,18 @@ export default function PDFCanvas({
           pageNumber: currentPage,
           x: 100,
           y: 100,
-          width: (img.width || 0) * scale,
-          height: (img.height || 0) * scale,
+          width: scaledWidth,
+          height: scaledHeight,
           imageData: base64,
         };
 
         dispatch(addElement(imageElement));
         elementManager.addElement(imageElement);
         historyManager.recordAdd(imageElement);
+
+        console.log('=== 이미지 추가 ===');
+        console.log('추가된 이미지:', imageElement);
+        console.log('ElementManager 전체 요소 개수:', elementManager.getAllElements().length);
       });
     } catch (error) {
       console.error('Failed to upload image:', error);

@@ -3,6 +3,8 @@
 import { ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import * as pdfjsLib from "pdfjs-dist";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 import { DownloadButton } from "@/components/pdf/download-button";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
@@ -17,6 +19,9 @@ import {
   setProcessing,
   setProgress,
 } from "@/store/slices/pdfSlice";
+
+// PDF.js worker 설정
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 type ConversionQuality = "standard" | "high";
 
@@ -36,41 +41,114 @@ export default function PdfToWordPage() {
       dispatch(setOperation("PDF to Word 변환"));
       dispatch(setProgress(10));
 
-      // Note: pdf-lib doesn't support PDF to Word conversion
-      // This would require a backend API or external service
-      // For now, we'll show a placeholder implementation
+      const file = files[0];
+      const arrayBuffer = await file.arrayBuffer();
+
+      dispatch(setProgress(20));
+
+      // PDF 문서 로드
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdfDoc = await loadingTask.promise;
 
       dispatch(setProgress(30));
 
-      // Simulate processing delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const totalPages = pdfDoc.numPages;
+      const paragraphs: Paragraph[] = [];
 
-      dispatch(setProgress(60));
+      // 각 페이지에서 텍스트 추출
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const page = await pdfDoc.getPage(pageNum);
+        const textContent = await page.getTextContent();
 
-      // In a real implementation, this would:
-      // 1. Send PDF to backend API or external service
-      // 2. Receive converted DOCX file
-      // 3. Create blob from response
+        dispatch(setProgress(30 + (pageNum / totalPages) * 50));
+
+        // 페이지 번호 헤더 추가
+        paragraphs.push(
+          new Paragraph({
+            text: `--- 페이지 ${pageNum} ---`,
+            heading: HeadingLevel.HEADING_2,
+            spacing: {
+              before: 200,
+              after: 100,
+            },
+          })
+        );
+
+        // 텍스트 아이템들을 그룹화하여 단락 생성
+        const lines: string[] = [];
+        let currentLine = "";
+        let lastY = 0;
+
+        for (const item of textContent.items) {
+          if ("str" in item && "transform" in item) {
+            const y = item.transform[5];
+            const text = item.str;
+
+            // 새로운 줄인지 확인 (y 좌표가 크게 변경됨)
+            if (lastY !== 0 && Math.abs(y - lastY) > 5) {
+              if (currentLine.trim()) {
+                lines.push(currentLine.trim());
+              }
+              currentLine = text;
+            } else {
+              // 같은 줄에 있는 텍스트
+              if (currentLine) {
+                currentLine += " " + text;
+              } else {
+                currentLine = text;
+              }
+            }
+
+            lastY = y;
+          }
+        }
+
+        // 마지막 줄 추가
+        if (currentLine.trim()) {
+          lines.push(currentLine.trim());
+        }
+
+        // 각 줄을 단락으로 추가
+        for (const line of lines) {
+          if (line.trim()) {
+            paragraphs.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: line,
+                    font: quality === "high" ? "맑은 고딕" : undefined,
+                  }),
+                ],
+                spacing: {
+                  after: 120,
+                },
+              })
+            );
+          }
+        }
+
+        // 페이지 사이에 간격 추가
+        if (pageNum < totalPages) {
+          paragraphs.push(new Paragraph({ text: "" }));
+        }
+      }
+
+      dispatch(setProgress(85));
+
+      // Word 문서 생성
+      const doc = new Document({
+        sections: [
+          {
+            properties: {},
+            children: paragraphs,
+          },
+        ],
+      });
 
       dispatch(setProgress(90));
 
-      // Placeholder: Create a simple text blob as demonstration
-      const placeholderText = `
-이 파일은 PDF to Word 변환의 플레이스홀더입니다.
-
-실제 구현을 위해서는 다음 중 하나가 필요합니다:
-1. 백엔드 API 서버 (pdf2docx, Apache POI, iText 등 사용)
-2. 외부 변환 서비스 API (CloudConvert, Zamzar 등)
-3. 전용 변환 라이브러리 통합
-
-원본 파일: ${files[0].name}
-변환 품질: ${quality === "high" ? "높음" : "표준"}
-변환 시간: ${new Date().toLocaleString("ko-KR")}
-      `.trim();
-
-      const blob = new Blob([placeholderText], {
-        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      });
+      // Word 문서를 Blob으로 변환
+      const blob = await Packer.toBlob(doc);
 
       dispatch(setProcessedFile(blob));
       dispatch(setProgress(100));
@@ -115,17 +193,16 @@ export default function PdfToWordPage() {
         {/* Implementation Notice */}
         <Card className="p-4 mb-6 bg-surface border-border">
           <div className="flex items-start gap-3">
-            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-xs font-bold text-primary">i</span>
+            <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-xs font-bold text-green-500">✓</span>
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-medium text-foreground mb-1">
-                개발 노트
+                브라우저 기반 변환
               </h3>
               <p className="text-xs text-muted-foreground">
-                현재 버전은 플레이스홀더 구현입니다. 실제 PDF to Word 변환을
-                위해서는 백엔드 API 또는 외부 변환 서비스 통합이 필요합니다.
-                (CloudConvert, pdf2docx, Apache POI 등)
+                이 도구는 브라우저에서 직접 PDF 텍스트를 추출하여 Word 문서로 변환합니다.
+                복잡한 레이아웃이나 이미지는 텍스트만 추출됩니다.
               </p>
             </div>
           </div>
