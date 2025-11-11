@@ -1,0 +1,17 @@
+# iLovePDF Robots.txt
+
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://www.ilovepdf.com/sitemap.xml
+
+# Allow all PDF tools
+Allow: /pdf/
+Allow: /en/pdf/
+Allow: /ja/pdf/
+Allow: /ru/pdf/
+Allow: /de/pdf/
+Allow: /fr/pdf/
+Allow: /hi/pdf/
+Allow: /bn/pdf/

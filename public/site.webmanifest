@@ -1,0 +1,22 @@
+{
+  "name": "iLovePDF - Online PDF Tools",
+  "short_name": "iLovePDF",
+  "description": "Free online PDF tools for PDF lovers. Merge, split, compress, convert, and edit PDFs easily.",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#c40e2d",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}
