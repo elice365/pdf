@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
-import pdfReducer from "./slices/pdfSlice";
 import editorReducer from "./slices/editorSlice";
+import pdfReducer from "./slices/pdfSlice";
 
 export const store = configureStore({
   reducer: {

@@ -1,10 +1,15 @@
 // PDF 내보내기 유틸리티
-import type { EditElement, TextElement, ImageElement, ShapeElement } from './types';
+import type {
+  EditElement,
+  ImageElement,
+  ShapeElement,
+  TextElement,
+} from "./types";
 
 export interface ExportOptions {
   fileName?: string;
-  quality?: 'low' | 'medium' | 'high';
-  format?: 'pdf' | 'png' | 'jpg';
+  quality?: "low" | "medium" | "high";
+  format?: "pdf" | "png" | "jpg";
 }
 
 export interface ExportData {
@@ -18,41 +23,41 @@ export interface ExportData {
  */
 export async function exportPDF(
   data: ExportData,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): Promise<{ success: boolean; data?: string; error?: string }> {
   try {
     const formData = new FormData();
-    formData.append('pdfData', data.originalPdfBase64);
-    formData.append('elements', JSON.stringify(data.elements));
-    formData.append('pageCount', data.pageCount.toString());
+    formData.append("pdfData", data.originalPdfBase64);
+    formData.append("elements", JSON.stringify(data.elements));
+    formData.append("pageCount", data.pageCount.toString());
 
     if (options.fileName) {
-      formData.append('fileName', options.fileName);
+      formData.append("fileName", options.fileName);
     }
     if (options.quality) {
-      formData.append('quality', options.quality);
+      formData.append("quality", options.quality);
     }
     if (options.format) {
-      formData.append('format', options.format);
+      formData.append("format", options.format);
     }
 
-    const response = await fetch('/api/pdf/editor/apply', {
-      method: 'POST',
+    const response = await fetch("/api/pdf/editor/apply", {
+      method: "POST",
       body: formData,
     });
 
     if (!response.ok) {
       const error = await response.json();
-      return { success: false, error: error.message || 'Export failed' };
+      return { success: false, error: error.message || "Export failed" };
     }
 
     const result = await response.json();
     return { success: true, data: result.pdf };
   } catch (error) {
-    console.error('Export error:', error);
+    console.error("Export error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -60,7 +65,10 @@ export async function exportPDF(
 /**
  * Base64를 Blob으로 변환
  */
-export function base64ToBlob(base64: string, contentType = 'application/pdf'): Blob {
+export function base64ToBlob(
+  base64: string,
+  contentType = "application/pdf",
+): Blob {
   const byteCharacters = atob(base64);
   const byteArrays = [];
 
@@ -81,11 +89,14 @@ export function base64ToBlob(base64: string, contentType = 'application/pdf'): B
 /**
  * 다운로드 트리거
  */
-export function downloadPDF(base64: string, fileName: string = 'edited.pdf'): void {
+export function downloadPDF(
+  base64: string,
+  fileName: string = "edited.pdf",
+): void {
   const blob = base64ToBlob(base64);
   const url = URL.createObjectURL(blob);
 
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
   document.body.appendChild(link);
@@ -120,17 +131,20 @@ export function validateElement(element: EditElement): boolean {
   // 기본 검증
   if (!element.id || !element.pageNumber) return false;
   if (element.width < 0 || element.height < 0) return false;
-  if (element.opacity !== undefined && (element.opacity < 0 || element.opacity > 1)) {
+  if (
+    element.opacity !== undefined &&
+    (element.opacity < 0 || element.opacity > 1)
+  ) {
     return false;
   }
 
   // 타입별 검증
   switch (element.type) {
-    case 'text':
+    case "text":
       return !!(element as TextElement).content;
-    case 'image':
+    case "image":
       return !!(element as ImageElement).imageData;
-    case 'shape':
+    case "shape":
       return !!(element as ShapeElement).shapeType;
     default:
       return true;

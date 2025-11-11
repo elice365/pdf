@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ChromePicker } from 'react-color';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { updateElement } from '@/store/slices/editorSlice';
-import type { ElementManager } from '@/lib/pdf-editor/element-manager';
-import type { TextElement, ImageElement, ShapeElement } from '@/lib/pdf-editor/types';
+import { useState } from "react";
+import { ChromePicker } from "react-color";
+import type { ElementManager } from "@/lib/pdf-editor/element-manager";
+import type {
+  ImageElement,
+  ShapeElement,
+  TextElement,
+} from "@/lib/pdf-editor/types";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateElement } from "@/store/slices/editorSlice";
 
 interface PropertiesPanelProps {
   elementManager: ElementManager;
 }
 
-export default function PropertiesPanel({ elementManager }: PropertiesPanelProps) {
+export default function PropertiesPanel({
+  elementManager,
+}: PropertiesPanelProps) {
   const dispatch = useAppDispatch();
   const { selectedElementIds } = useAppSelector((state) => state.editor);
 
@@ -26,7 +32,7 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
     if (selectedElements.length === 0) return;
     const element = selectedElements[0];
 
-    if (element.type === 'shape') {
+    if (element.type === "shape") {
       const updates = { strokeColor: color.hex };
 
       // Redux 상태 업데이트
@@ -41,7 +47,7 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
     if (selectedElements.length === 0) return;
     const element = selectedElements[0];
 
-    if (element.type === 'shape') {
+    if (element.type === "shape") {
       const updates = { fillColor: color.hex };
 
       // Redux 상태 업데이트
@@ -83,7 +89,9 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
             <label className="block text-sm font-medium text-foreground mb-1">
               타입
             </label>
-            <div className="text-sm text-foreground capitalize">{element.type}</div>
+            <div className="text-sm text-foreground capitalize">
+              {element.type}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -233,7 +241,7 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
         </div>
 
         {/* 타입별 속성 */}
-        {element.type === 'text' && (
+        {element.type === "text" && (
           <div className="space-y-3 pt-3 border-t border">
             <h4 className="font-medium text-foreground text-sm">텍스트 속성</h4>
 
@@ -321,8 +329,8 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
                   }}
                   className={`px-3 py-1.5 text-sm font-bold border rounded transition-colors ${
                     (element as TextElement).bold
-                      ? 'bg-primary text-white border-primary'
-                      : 'bg-background text-foreground border hover:border-foreground'
+                      ? "bg-primary text-white border-primary"
+                      : "bg-background text-foreground border hover:border-foreground"
                   }`}
                   title="굵게"
                 >
@@ -330,14 +338,16 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
                 </button>
                 <button
                   onClick={() => {
-                    const updates = { italic: !(element as TextElement).italic };
+                    const updates = {
+                      italic: !(element as TextElement).italic,
+                    };
                     dispatch(updateElement({ id: element.id, updates }));
                     elementManager.updateElement(element.id, updates);
                   }}
                   className={`px-3 py-1.5 text-sm italic border rounded transition-colors ${
                     (element as TextElement).italic
-                      ? 'bg-primary text-white border-primary'
-                      : 'bg-background text-foreground border hover:border-foreground'
+                      ? "bg-primary text-white border-primary"
+                      : "bg-background text-foreground border hover:border-foreground"
                   }`}
                   title="기울임"
                 >
@@ -345,14 +355,16 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
                 </button>
                 <button
                   onClick={() => {
-                    const updates = { underline: !(element as TextElement).underline };
+                    const updates = {
+                      underline: !(element as TextElement).underline,
+                    };
                     dispatch(updateElement({ id: element.id, updates }));
                     elementManager.updateElement(element.id, updates);
                   }}
                   className={`px-3 py-1.5 text-sm underline border rounded transition-colors ${
                     (element as TextElement).underline
-                      ? 'bg-primary text-white border-primary'
-                      : 'bg-background text-foreground border hover:border-foreground'
+                      ? "bg-primary text-white border-primary"
+                      : "bg-background text-foreground border hover:border-foreground"
                   }`}
                   title="밑줄"
                 >
@@ -369,7 +381,16 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
 
               {/* 색상 프리셋 */}
               <div className="grid grid-cols-8 gap-1 mb-2">
-                {['#000000', '#FFFFFF', '#E5322D', '#4299E1', '#48BB78', '#F6BD60', '#9F7AEA', '#F56565'].map((color) => (
+                {[
+                  "#000000",
+                  "#FFFFFF",
+                  "#E5322D",
+                  "#4299E1",
+                  "#48BB78",
+                  "#F6BD60",
+                  "#9F7AEA",
+                  "#F56565",
+                ].map((color) => (
                   <button
                     key={color}
                     type="button"
@@ -428,7 +449,7 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
           </div>
         )}
 
-        {element.type === 'shape' && (
+        {element.type === "shape" && (
           <div className="space-y-3 pt-3 border-t border">
             <h4 className="font-medium text-foreground text-sm">도형 속성</h4>
             <div>
@@ -486,7 +507,16 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
 
               {/* 색상 프리셋 */}
               <div className="grid grid-cols-8 gap-1 mb-2">
-                {['#000000', '#FFFFFF', '#E5322D', '#4299E1', '#48BB78', '#F6BD60', '#9F7AEA', '#F56565'].map((color) => (
+                {[
+                  "#000000",
+                  "#FFFFFF",
+                  "#E5322D",
+                  "#4299E1",
+                  "#48BB78",
+                  "#F6BD60",
+                  "#9F7AEA",
+                  "#F56565",
+                ].map((color) => (
                   <button
                     key={color}
                     type="button"
@@ -544,7 +574,16 @@ export default function PropertiesPanel({ elementManager }: PropertiesPanelProps
 
               {/* 색상 프리셋 */}
               <div className="grid grid-cols-8 gap-1 mb-2">
-                {['#000000', '#FFFFFF', '#E5322D', '#4299E1', '#48BB78', '#F6BD60', '#9F7AEA', '#F56565'].map((color) => (
+                {[
+                  "#000000",
+                  "#FFFFFF",
+                  "#E5322D",
+                  "#4299E1",
+                  "#48BB78",
+                  "#F6BD60",
+                  "#9F7AEA",
+                  "#F56565",
+                ].map((color) => (
                   <button
                     key={color}
                     type="button"

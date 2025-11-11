@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import PDFEditor from '@/components/pdf-editor/PDFEditor';
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import PDFEditor from "@/components/pdf-editor/PDFEditor";
 
 function EditorPageContent() {
   const searchParams = useSearchParams();
@@ -18,9 +18,9 @@ function EditorPageContent() {
         // 여기서는 임시로 에러 처리만 수행
         setLoading(false);
       } catch (err) {
-        console.error('Failed to load file:', err);
+        console.error("Failed to load file:", err);
         setError(
-          err instanceof Error ? err.message : 'Failed to load PDF file'
+          err instanceof Error ? err.message : "Failed to load PDF file",
         );
         setLoading(false);
       }
@@ -64,9 +64,7 @@ function EditorPageContent() {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             PDF 파일 선택
           </h2>
-          <p className="text-gray-600 mb-6">
-            편집할 PDF 파일을 선택해주세요.
-          </p>
+          <p className="text-gray-600 mb-6">편집할 PDF 파일을 선택해주세요.</p>
           <div className="space-y-4">
             <input
               type="file"

@@ -21,7 +21,8 @@ export const de = {
   // Hero Section
   hero: {
     title: "Online-Tools für PDF-Liebhaber",
-    description: "PDF zusammenführen, PDF teilen, PDF komprimieren, Office zu PDF, PDF zu JPG und mehr!",
+    description:
+      "PDF zusammenführen, PDF teilen, PDF komprimieren, Office zu PDF, PDF zu JPG und mehr!",
   },
 
   // Tool Names
@@ -57,14 +58,21 @@ export const de = {
 
   // Tool Descriptions
   toolDescriptions: {
-    merge: "Mehrere PDF-Dateien zu einer zusammenführen. Führen Sie PDF-Dateien einfach mit unserem kostenlosen Online-Tool zusammen.",
-    split: "PDF in mehrere Dateien aufteilen. Extrahieren Sie bestimmte Seiten aus Ihrer PDF mit unserem kostenlosen Online-Tool.",
-    compress: "PDF-Dateigröße reduzieren. Optimieren Sie Ihre PDF-Dateien ohne Qualitätsverlust mit unserem kostenlosen Online-Kompressor.",
-    rotate: "PDF-Seiten drehen. Passen Sie die Seitenausrichtung mit unserem kostenlosen Online-Tool an.",
+    merge:
+      "Mehrere PDF-Dateien zu einer zusammenführen. Führen Sie PDF-Dateien einfach mit unserem kostenlosen Online-Tool zusammen.",
+    split:
+      "PDF in mehrere Dateien aufteilen. Extrahieren Sie bestimmte Seiten aus Ihrer PDF mit unserem kostenlosen Online-Tool.",
+    compress:
+      "PDF-Dateigröße reduzieren. Optimieren Sie Ihre PDF-Dateien ohne Qualitätsverlust mit unserem kostenlosen Online-Kompressor.",
+    rotate:
+      "PDF-Seiten drehen. Passen Sie die Seitenausrichtung mit unserem kostenlosen Online-Tool an.",
     edit: "PDF-Inhalt bearbeiten. Ändern Sie Text und Bilder in Ihrer PDF mit unserem kostenlosen Online-Editor.",
-    protect: "PDF mit Passwort schützen. Sichern Sie Ihre PDF-Dateien durch Hinzufügen eines Passworts mit unserem kostenlosen Online-Tool.",
-    wordToPdf: "Word in PDF konvertieren. Wandeln Sie DOCX-Dateien in PDF um mit unserem kostenlosen Online-Konverter.",
-    pdfToJpg: "PDF in Bilder konvertieren. Extrahieren Sie jede Seite als Bild mit unserem kostenlosen Online-Konverter.",
+    protect:
+      "PDF mit Passwort schützen. Sichern Sie Ihre PDF-Dateien durch Hinzufügen eines Passworts mit unserem kostenlosen Online-Tool.",
+    wordToPdf:
+      "Word in PDF konvertieren. Wandeln Sie DOCX-Dateien in PDF um mit unserem kostenlosen Online-Konverter.",
+    pdfToJpg:
+      "PDF in Bilder konvertieren. Extrahieren Sie jede Seite als Bild mit unserem kostenlosen Online-Konverter.",
   },
 
   // Common

@@ -1,5 +1,5 @@
 // 편집 요소 관리자
-import type { EditElement, BaseElement } from './types';
+import type { BaseElement, EditElement } from "./types";
 
 export class ElementManager {
   private elements: Map<string, EditElement> = new Map();
@@ -123,11 +123,7 @@ export class ElementManager {
   /**
    * 요소 크기 변경
    */
-  resizeElement(
-    id: string,
-    width: number,
-    height: number
-  ): EditElement | null {
+  resizeElement(id: string, width: number, height: number): EditElement | null {
     return this.updateElement(id, { width, height } as Partial<EditElement>);
   }
 

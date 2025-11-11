@@ -7,26 +7,31 @@ interface BreadcrumbJsonLdProps {
   toolPath: string;
 }
 
-export function BreadcrumbJsonLd({ locale, toolKey, toolPath }: BreadcrumbJsonLdProps) {
+export function BreadcrumbJsonLd({
+  locale,
+  toolKey,
+  toolPath,
+}: BreadcrumbJsonLdProps) {
   const t = getTranslation(locale);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.ilovepdf.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.ilovepdf.com";
   const localePath = locale === "ko" ? "" : `/${locale}`;
 
   const breadcrumbList = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": [
+    itemListElement: [
       {
         "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": `${baseUrl}${localePath}`,
+        position: 1,
+        name: "Home",
+        item: `${baseUrl}${localePath}`,
       },
       {
         "@type": "ListItem",
-        "position": 2,
-        "name": t.tools[toolKey],
-        "item": `${baseUrl}${localePath}${toolPath}`,
+        position: 2,
+        name: t.tools[toolKey],
+        item: `${baseUrl}${localePath}${toolPath}`,
       },
     ],
   };

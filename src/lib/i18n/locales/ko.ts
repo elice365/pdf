@@ -22,7 +22,8 @@ export const ko = {
   // Hero Section
   hero: {
     title: "PDF 애호가들을 위한 온라인 툴",
-    description: "PDF 병합, PDF 나누기, PDF 압축, 오피스 파일에서 PDF로, PDF에서 JPG로 변환 등!",
+    description:
+      "PDF 병합, PDF 나누기, PDF 압축, 오피스 파일에서 PDF로, PDF에서 JPG로 변환 등!",
   },
 
   // Tool Names
@@ -58,14 +59,21 @@ export const ko = {
 
   // Tool Descriptions
   toolDescriptions: {
-    merge: "여러 PDF 파일을 하나로 병합합니다. 무료 온라인 PDF 합치기 도구로 간편하게 PDF를 결합하세요.",
-    split: "PDF를 여러 파일로 분할합니다. 무료 온라인 PDF 나누기 도구로 원하는 페이지만 추출하세요.",
-    compress: "PDF 파일 크기를 줄입니다. 무료 온라인 PDF 압축 도구로 품질 저하 없이 파일 크기를 최적화하세요.",
-    rotate: "PDF 페이지를 회전합니다. 무료 온라인 PDF 회전 도구로 페이지 방향을 조정하세요.",
+    merge:
+      "여러 PDF 파일을 하나로 병합합니다. 무료 온라인 PDF 합치기 도구로 간편하게 PDF를 결합하세요.",
+    split:
+      "PDF를 여러 파일로 분할합니다. 무료 온라인 PDF 나누기 도구로 원하는 페이지만 추출하세요.",
+    compress:
+      "PDF 파일 크기를 줄입니다. 무료 온라인 PDF 압축 도구로 품질 저하 없이 파일 크기를 최적화하세요.",
+    rotate:
+      "PDF 페이지를 회전합니다. 무료 온라인 PDF 회전 도구로 페이지 방향을 조정하세요.",
     edit: "PDF 내용을 편집합니다. 무료 온라인 PDF 편집 도구로 텍스트와 이미지를 수정하세요.",
-    protect: "암호로 PDF를 보호합니다. 무료 온라인 PDF 보호 도구로 파일에 비밀번호를 설정하세요.",
-    wordToPdf: "Word 파일을 PDF로 변환합니다. 무료 온라인 Word to PDF 변환 도구를 사용하세요.",
-    pdfToJpg: "PDF를 이미지로 변환합니다. 무료 온라인 PDF to JPG 변환 도구로 각 페이지를 이미지로 추출하세요.",
+    protect:
+      "암호로 PDF를 보호합니다. 무료 온라인 PDF 보호 도구로 파일에 비밀번호를 설정하세요.",
+    wordToPdf:
+      "Word 파일을 PDF로 변환합니다. 무료 온라인 Word to PDF 변환 도구를 사용하세요.",
+    pdfToJpg:
+      "PDF를 이미지로 변환합니다. 무료 온라인 PDF to JPG 변환 도구로 각 페이지를 이미지로 추출하세요.",
   },
 
   // Common

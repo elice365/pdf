@@ -1,11 +1,11 @@
 "use client";
 
-import { ArrowLeft, Presentation, Download } from "lucide-react";
+import { ArrowLeft, Download, Presentation } from "lucide-react";
 import Link from "next/link";
 import { PDFDocument } from "pdf-lib";
-import { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import pptxgen from "pptxgenjs";
+import { useState } from "react";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
 import { Button } from "@/components/ui/button";
@@ -100,7 +100,7 @@ export default function PdfToPowerPointPage() {
       dispatch(setProgress(95));
 
       // PowerPoint 파일 생성
-      const blob = await ppt.write({ outputType: "blob" }) as Blob;
+      const blob = (await ppt.write({ outputType: "blob" })) as Blob;
 
       setPptxBlob(blob);
       setCompleted(true);
@@ -119,7 +119,8 @@ export default function PdfToPowerPointPage() {
 
     const link = document.createElement("a");
     link.href = URL.createObjectURL(pptxBlob);
-    link.download = files[0]?.name.replace(/\.pdf$/i, ".pptx") || "converted.pptx";
+    link.download =
+      files[0]?.name.replace(/\.pdf$/i, ".pptx") || "converted.pptx";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -215,14 +216,18 @@ export default function PdfToPowerPointPage() {
 
               <div className="p-4 bg-surface rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  PDF의 각 페이지가 이미지로 변환되어 PowerPoint 슬라이드에 추가되었습니다.
+                  PDF의 각 페이지가 이미지로 변환되어 PowerPoint 슬라이드에
+                  추가되었습니다.
                   <br />
                   슬라이드는 PPTX 형식으로 저장됩니다.
                 </p>
               </div>
 
               <div className="flex justify-center gap-3">
-                <Button onClick={handleDownload} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button
+                  onClick={handleDownload}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
                   <Download className="w-4 h-4 mr-2" />
                   PowerPoint 다운로드
                 </Button>

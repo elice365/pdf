@@ -1,10 +1,10 @@
-import type { PayloadAction } from '@reduxjs/toolkit';
-import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import type {
   EditElement,
-  ToolType,
   PDFPageInfo,
-} from '@/lib/pdf-editor/types';
+  ToolType,
+} from "@/lib/pdf-editor/types";
 
 export interface EditorState {
   // PDF 상태
@@ -16,7 +16,7 @@ export interface EditorState {
   // 도구 상태
   currentTool: ToolType;
   isDrawing: boolean;
-  selectedShapeType: 'rectangle' | 'circle' | 'line';
+  selectedShapeType: "rectangle" | "circle" | "line";
 
   // 요소 상태
   elements: EditElement[];
@@ -48,9 +48,9 @@ const initialState: EditorState = {
   currentPage: 1,
   totalPages: 0,
 
-  currentTool: 'select',
+  currentTool: "select",
   isDrawing: false,
-  selectedShapeType: 'rectangle',
+  selectedShapeType: "rectangle",
 
   elements: [],
   selectedElementIds: [],
@@ -72,7 +72,7 @@ const initialState: EditorState = {
 };
 
 const editorSlice = createSlice({
-  name: 'editor',
+  name: "editor",
   initialState,
   reducers: {
     // PDF 관련
@@ -104,14 +104,17 @@ const editorSlice = createSlice({
     setTool: (state, action: PayloadAction<ToolType>) => {
       state.currentTool = action.payload;
       // 도구 전환 시 선택 해제
-      if (action.payload !== 'select') {
+      if (action.payload !== "select") {
         state.selectedElementIds = [];
       }
     },
     setDrawing: (state, action: PayloadAction<boolean>) => {
       state.isDrawing = action.payload;
     },
-    setSelectedShapeType: (state, action: PayloadAction<'rectangle' | 'circle' | 'line'>) => {
+    setSelectedShapeType: (
+      state,
+      action: PayloadAction<"rectangle" | "circle" | "line">,
+    ) => {
       state.selectedShapeType = action.payload;
     },
 
@@ -121,9 +124,11 @@ const editorSlice = createSlice({
     },
     updateElement: (
       state,
-      action: PayloadAction<{ id: string; updates: Partial<EditElement> }>
+      action: PayloadAction<{ id: string; updates: Partial<EditElement> }>,
     ) => {
-      const index = state.elements.findIndex((el) => el.id === action.payload.id);
+      const index = state.elements.findIndex(
+        (el) => el.id === action.payload.id,
+      );
       if (index !== -1) {
         state.elements[index] = {
           ...state.elements[index],
@@ -134,12 +139,12 @@ const editorSlice = createSlice({
     deleteElement: (state, action: PayloadAction<string>) => {
       state.elements = state.elements.filter((el) => el.id !== action.payload);
       state.selectedElementIds = state.selectedElementIds.filter(
-        (id) => id !== action.payload
+        (id) => id !== action.payload,
       );
     },
     deleteSelectedElements: (state) => {
       state.elements = state.elements.filter(
-        (el) => !state.selectedElementIds.includes(el.id)
+        (el) => !state.selectedElementIds.includes(el.id),
       );
       state.selectedElementIds = [];
     },
@@ -155,7 +160,7 @@ const editorSlice = createSlice({
     },
     deselectElement: (state, action: PayloadAction<string>) => {
       state.selectedElementIds = state.selectedElementIds.filter(
-        (id) => id !== action.payload
+        (id) => id !== action.payload,
       );
     },
     setSelectedElements: (state, action: PayloadAction<string[]>) => {
@@ -194,7 +199,7 @@ const editorSlice = createSlice({
     },
     setCanvasSize: (
       state,
-      action: PayloadAction<{ width: number; height: number }>
+      action: PayloadAction<{ width: number; height: number }>,
     ) => {
       state.canvasWidth = action.payload.width;
       state.canvasHeight = action.payload.height;
@@ -203,7 +208,11 @@ const editorSlice = createSlice({
     // 히스토리 관련
     setHistoryState: (
       state,
-      action: PayloadAction<{ canUndo: boolean; canRedo: boolean; count: number }>
+      action: PayloadAction<{
+        canUndo: boolean;
+        canRedo: boolean;
+        count: number;
+      }>,
     ) => {
       state.canUndo = action.payload.canUndo;
       state.canRedo = action.payload.canRedo;

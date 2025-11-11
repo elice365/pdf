@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { PDFDocument } from "pdf-lib";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 export async function POST(request: NextRequest) {
   try {

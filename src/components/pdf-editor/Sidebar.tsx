@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useAppDispatch } from '@/store/hooks';
-import { setCurrentPage } from '@/store/slices/editorSlice';
-import type { PDFPageInfo } from '@/lib/pdf-editor/types';
-import type { PDFRenderer } from '@/lib/pdf-editor/renderer';
-import { cn } from '@/lib/utils';
+import type { PDFRenderer } from "@/lib/pdf-editor/renderer";
+import type { PDFPageInfo } from "@/lib/pdf-editor/types";
+import { cn } from "@/lib/utils";
+import { useAppDispatch } from "@/store/hooks";
+import { setCurrentPage } from "@/store/slices/editorSlice";
 
 interface SidebarProps {
   pages: PDFPageInfo[];
@@ -12,7 +12,11 @@ interface SidebarProps {
   renderer: PDFRenderer;
 }
 
-export default function Sidebar({ pages, currentPage, renderer }: SidebarProps) {
+export default function Sidebar({
+  pages,
+  currentPage,
+  renderer,
+}: SidebarProps) {
   const dispatch = useAppDispatch();
 
   const handlePageClick = (pageNumber: number) => {
@@ -31,11 +35,11 @@ export default function Sidebar({ pages, currentPage, renderer }: SidebarProps) 
             type="button"
             onClick={() => handlePageClick(page.pageNumber)}
             className={cn(
-              'w-full rounded-lg border-2 overflow-hidden transition-all',
-              'hover:border-primary hover:shadow-md',
+              "w-full rounded-lg border-2 overflow-hidden transition-all",
+              "hover:border-primary hover:shadow-md",
               currentPage === page.pageNumber
-                ? 'border-primary shadow-md'
-                : 'border'
+                ? "border-primary shadow-md"
+                : "border",
             )}
           >
             {/* 썸네일 이미지 */}

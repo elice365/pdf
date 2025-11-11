@@ -1,10 +1,10 @@
 // PDF 렌더링 엔진
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
-import type { PDFPageInfo } from './types';
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import type { PDFPageInfo } from "./types";
 
 // PDF.js 워커 설정
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+if (typeof window !== "undefined") {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 }
 
 export class PDFRenderer {
@@ -47,22 +47,22 @@ export class PDFRenderer {
   async renderPage(
     pageNumber: number,
     scale: number = 1.0,
-    canvas?: HTMLCanvasElement
+    canvas?: HTMLCanvasElement,
   ): Promise<HTMLCanvasElement> {
     if (!this.pdf) {
-      throw new Error('PDF not loaded');
+      throw new Error("PDF not loaded");
     }
 
     const page = await this.pdf.getPage(pageNumber);
     const viewport = page.getViewport({ scale });
 
-    const renderCanvas = canvas || document.createElement('canvas');
+    const renderCanvas = canvas || document.createElement("canvas");
     renderCanvas.width = viewport.width;
     renderCanvas.height = viewport.height;
 
-    const context = renderCanvas.getContext('2d');
+    const context = renderCanvas.getContext("2d");
     if (!context) {
-      throw new Error('Failed to get canvas context');
+      throw new Error("Failed to get canvas context");
     }
 
     await page.render({
@@ -79,7 +79,7 @@ export class PDFRenderer {
    */
   async generateThumbnail(pageNumber: number): Promise<string> {
     const canvas = await this.renderPage(pageNumber, 0.2);
-    return canvas.toDataURL('image/jpeg', 0.7);
+    return canvas.toDataURL("image/jpeg", 0.7);
   }
 
   /**
@@ -90,7 +90,7 @@ export class PDFRenderer {
       this.pages.map(async (page) => ({
         ...page,
         thumbnail: await this.generateThumbnail(page.pageNumber),
-      }))
+      })),
     );
 
     this.pages = pagesWithThumbnails;

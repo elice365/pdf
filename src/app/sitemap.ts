@@ -1,9 +1,10 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
 import { tools } from "@/components/tools/tools-data";
 import { i18n } from "@/lib/i18n/config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.ilovepdf.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.ilovepdf.com";
   const sitemap: MetadataRoute.Sitemap = [];
 
   // 각 언어별로 URL 생성
@@ -21,7 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
           i18n.locales.map((loc) => [
             loc,
             `${baseUrl}${loc === i18n.defaultLocale ? "" : `/${loc}`}`,
-          ])
+          ]),
         ),
       },
     });
@@ -38,7 +39,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
             i18n.locales.map((loc) => [
               loc,
               `${baseUrl}${loc === i18n.defaultLocale ? "" : `/${loc}`}${tool.href}`,
-            ])
+            ]),
           ),
         },
       });

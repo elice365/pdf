@@ -1,8 +1,8 @@
 // 편집 히스토리 관리자 (Undo/Redo)
-import type { EditElement, HistoryItem } from './types';
+import type { EditElement, HistoryItem } from "./types";
 
 export interface HistoryAction {
-  type: 'add' | 'update' | 'delete';
+  type: "add" | "update" | "delete";
   elementId: string;
   before?: EditElement;
   after?: EditElement;
@@ -31,7 +31,7 @@ export class HistoryManager {
    */
   recordAdd(element: EditElement): void {
     this.recordAction({
-      type: 'add',
+      type: "add",
       elementId: element.id,
       after: element,
     });
@@ -42,7 +42,7 @@ export class HistoryManager {
    */
   recordUpdate(before: EditElement, after: EditElement): void {
     this.recordAction({
-      type: 'update',
+      type: "update",
       elementId: before.id,
       before,
       after,
@@ -54,7 +54,7 @@ export class HistoryManager {
    */
   recordDelete(element: EditElement): void {
     this.recordAction({
-      type: 'delete',
+      type: "delete",
       elementId: element.id,
       before: element,
     });

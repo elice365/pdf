@@ -1,10 +1,10 @@
 "use client";
 
-import { ArrowLeft, FileSpreadsheet, Download } from "lucide-react";
+import { ArrowLeft, Download, FileSpreadsheet } from "lucide-react";
 import Link from "next/link";
 import { PDFDocument } from "pdf-lib";
-import { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
+import { useState } from "react";
 import * as XLSX from "xlsx";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
@@ -97,18 +97,14 @@ export default function PdfToExcelPage() {
 
         // 2D 배열로 변환
         const sheetData: string[][] = lines.map((line) =>
-          line.items.map((item) => item.text)
+          line.items.map((item) => item.text),
         );
 
         // 워크시트 생성
         const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
 
         // 워크북에 추가
-        XLSX.utils.book_append_sheet(
-          workbook,
-          worksheet,
-          `페이지 ${pageNum}`
-        );
+        XLSX.utils.book_append_sheet(workbook, worksheet, `페이지 ${pageNum}`);
       }
 
       dispatch(setProgress(85));
@@ -141,7 +137,8 @@ export default function PdfToExcelPage() {
 
     const link = document.createElement("a");
     link.href = URL.createObjectURL(excelBlob);
-    link.download = files[0]?.name.replace(/\.pdf$/i, ".xlsx") || "converted.xlsx";
+    link.download =
+      files[0]?.name.replace(/\.pdf$/i, ".xlsx") || "converted.xlsx";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -238,14 +235,17 @@ export default function PdfToExcelPage() {
 
               <div className="p-4 bg-surface rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  PDF의 텍스트 내용이 위치 기반으로 추출되어 Excel 시트로 변환되었습니다.
-                  <br />
-                  각 페이지는 별도의 시트로 저장됩니다.
+                  PDF의 텍스트 내용이 위치 기반으로 추출되어 Excel 시트로
+                  변환되었습니다.
+                  <br />각 페이지는 별도의 시트로 저장됩니다.
                 </p>
               </div>
 
               <div className="flex justify-center gap-3">
-                <Button onClick={handleDownload} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button
+                  onClick={handleDownload}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Excel 다운로드
                 </Button>

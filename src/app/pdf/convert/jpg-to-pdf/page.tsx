@@ -52,14 +52,22 @@ export default function JpgToPdfPage() {
 
         // Embed image based on file type
         let image;
-        if (file.type === "image/png" || file.name.toLowerCase().endsWith(".png")) {
+        if (
+          file.type === "image/png" ||
+          file.name.toLowerCase().endsWith(".png")
+        ) {
           image = await pdfDoc.embedPng(imageBytes);
-        } else if (file.type === "image/jpeg" || file.type === "image/jpg" ||
-                   file.name.toLowerCase().endsWith(".jpg") ||
-                   file.name.toLowerCase().endsWith(".jpeg")) {
+        } else if (
+          file.type === "image/jpeg" ||
+          file.type === "image/jpg" ||
+          file.name.toLowerCase().endsWith(".jpg") ||
+          file.name.toLowerCase().endsWith(".jpeg")
+        ) {
           image = await pdfDoc.embedJpg(imageBytes);
         } else {
-          throw new Error(`지원하지 않는 이미지 형식입니다: ${file.type || file.name}`);
+          throw new Error(
+            `지원하지 않는 이미지 형식입니다: ${file.type || file.name}`,
+          );
         }
         const imageDims = image.scale(1);
 
@@ -111,8 +119,8 @@ export default function JpgToPdfPage() {
         setError(
           error instanceof Error
             ? error.message
-            : "이미지 to PDF 변환 중 오류가 발생했습니다."
-        )
+            : "이미지 to PDF 변환 중 오류가 발생했습니다.",
+        ),
       );
     } finally {
       dispatch(setProcessing(false));
@@ -155,7 +163,7 @@ export default function JpgToPdfPage() {
               multiple={true}
               accept={{
                 "image/jpeg": [".jpg", ".jpeg"],
-                "image/png": [".png"]
+                "image/png": [".png"],
               }}
             />
           </Card>

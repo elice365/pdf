@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import type { Locale } from "./config";
 import { i18n } from "./config";
 import { getTranslation } from "./locales";
@@ -16,7 +16,8 @@ const localeMap: Record<Locale, string> = {
 
 export function generateLocalizedMetadata(locale: Locale): Metadata {
   const t = getTranslation(locale);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.ilovepdf.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.ilovepdf.com";
   const localePath = locale === i18n.defaultLocale ? "" : `/${locale}`;
 
   // Generate hreflang alternates
@@ -26,7 +27,8 @@ export function generateLocalizedMetadata(locale: Locale): Metadata {
     languages[loc] = `${baseUrl}${path}`;
   });
   // Add x-default for international fallback
-  languages["x-default"] = `${baseUrl}/${i18n.defaultLocale === "ko" ? "en" : i18n.defaultLocale}`;
+  languages["x-default"] =
+    `${baseUrl}/${i18n.defaultLocale === "ko" ? "en" : i18n.defaultLocale}`;
 
   return {
     metadataBase: new URL(baseUrl),
@@ -122,11 +124,15 @@ interface ToolMetadata {
 
 export function generateToolMetadata(params: ToolMetadata): Metadata {
   const t = getTranslation(params.locale);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.ilovepdf.com";
-  const localePath = params.locale === i18n.defaultLocale ? "" : `/${params.locale}`;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.ilovepdf.com";
+  const localePath =
+    params.locale === i18n.defaultLocale ? "" : `/${params.locale}`;
 
   const toolName = t.tools[params.toolKey];
-  const toolDescription = (t.toolDescriptions as Record<string, string>)[params.toolKey] || t.seo.description;
+  const toolDescription =
+    (t.toolDescriptions as Record<string, string>)[params.toolKey] ||
+    t.seo.description;
   const fullTitle = `${toolName} | iLovePDF`;
 
   // Generate hreflang alternates for this tool

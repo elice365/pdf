@@ -1,12 +1,12 @@
-import { ko } from "./ko";
-import { en } from "./en";
-import { ja } from "./ja";
-import { ru } from "./ru";
+import type { Locale } from "../config";
+import { bn } from "./bn";
 import { de } from "./de";
+import { en } from "./en";
 import { fr } from "./fr";
 import { hi } from "./hi";
-import { bn } from "./bn";
-import type { Locale } from "../config";
+import { ja } from "./ja";
+import { ko } from "./ko";
+import { ru } from "./ru";
 
 export const translations = {
   ko,

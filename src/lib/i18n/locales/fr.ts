@@ -21,7 +21,8 @@ export const fr = {
   // Hero Section
   hero: {
     title: "Outils en ligne pour les amateurs de PDF",
-    description: "Fusionner PDF, diviser PDF, compresser PDF, Office vers PDF, PDF vers JPG et plus encore!",
+    description:
+      "Fusionner PDF, diviser PDF, compresser PDF, Office vers PDF, PDF vers JPG et plus encore!",
   },
 
   // Tool Names
@@ -57,14 +58,21 @@ export const fr = {
 
   // Tool Descriptions
   toolDescriptions: {
-    merge: "Combinez plusieurs fichiers PDF en un seul. Fusionnez facilement des fichiers PDF avec notre outil gratuit en ligne.",
-    split: "Divisez un PDF en plusieurs fichiers. Extrayez des pages spécifiques de votre PDF avec notre outil gratuit en ligne.",
-    compress: "Réduisez la taille du fichier PDF. Optimisez vos fichiers PDF sans perte de qualité avec notre compresseur gratuit en ligne.",
-    rotate: "Pivotez les pages PDF. Ajustez l'orientation des pages avec notre outil gratuit en ligne.",
+    merge:
+      "Combinez plusieurs fichiers PDF en un seul. Fusionnez facilement des fichiers PDF avec notre outil gratuit en ligne.",
+    split:
+      "Divisez un PDF en plusieurs fichiers. Extrayez des pages spécifiques de votre PDF avec notre outil gratuit en ligne.",
+    compress:
+      "Réduisez la taille du fichier PDF. Optimisez vos fichiers PDF sans perte de qualité avec notre compresseur gratuit en ligne.",
+    rotate:
+      "Pivotez les pages PDF. Ajustez l'orientation des pages avec notre outil gratuit en ligne.",
     edit: "Modifiez le contenu PDF. Modifiez le texte et les images de votre PDF avec notre éditeur gratuit en ligne.",
-    protect: "Protégez le PDF avec un mot de passe. Sécurisez vos fichiers PDF en ajoutant un mot de passe avec notre outil gratuit en ligne.",
-    wordToPdf: "Convertissez Word en PDF. Transformez les fichiers DOCX en PDF avec notre convertisseur gratuit en ligne.",
-    pdfToJpg: "Convertissez PDF en images. Extrayez chaque page en tant qu'image avec notre convertisseur gratuit en ligne.",
+    protect:
+      "Protégez le PDF avec un mot de passe. Sécurisez vos fichiers PDF en ajoutant un mot de passe avec notre outil gratuit en ligne.",
+    wordToPdf:
+      "Convertissez Word en PDF. Transformez les fichiers DOCX en PDF avec notre convertisseur gratuit en ligne.",
+    pdfToJpg:
+      "Convertissez PDF en images. Extrayez chaque page en tant qu'image avec notre convertisseur gratuit en ligne.",
   },
 
   // Common

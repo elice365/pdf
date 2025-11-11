@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { useHotkeys } from 'react-hotkeys-hook';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useEffect, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { ElementManager } from "@/lib/pdf-editor/element-manager";
+import { HistoryManager } from "@/lib/pdf-editor/history-manager";
+import { PDFRenderer } from "@/lib/pdf-editor/renderer";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  setPdfFile,
-  setPages,
-  setLoading,
-  setError,
-  setCanvasSize,
-  deleteSelectedElements,
   addElement,
-  updateElement,
   deleteElement,
-  setHistoryState,
+  deleteSelectedElements,
   resetEditor,
-} from '@/store/slices/editorSlice';
-import { PDFRenderer } from '@/lib/pdf-editor/renderer';
-import { ElementManager } from '@/lib/pdf-editor/element-manager';
-import { HistoryManager } from '@/lib/pdf-editor/history-manager';
-import Toolbar from './Toolbar';
-import PDFCanvas from './PDFCanvas';
-import Sidebar from './Sidebar';
-import PropertiesPanel from './PropertiesPanel';
+  setCanvasSize,
+  setError,
+  setHistoryState,
+  setLoading,
+  setPages,
+  setPdfFile,
+  updateElement,
+} from "@/store/slices/editorSlice";
+import PDFCanvas from "./PDFCanvas";
+import PropertiesPanel from "./PropertiesPanel";
+import Sidebar from "./Sidebar";
+import Toolbar from "./Toolbar";
 
 interface PDFEditorProps {
   file: File;
@@ -62,14 +62,14 @@ export default function PDFEditor({ file, onBack }: PDFEditorProps) {
   // 키보드 단축키
   // Delete: 선택된 요소 삭제
   useHotkeys(
-    'delete',
+    "delete",
     (e) => {
       e.preventDefault();
       if (selectedElementIds.length > 0) {
         // 삭제 전에 선택된 요소들의 정보 가져오기
-        const selectedElements = elementManagerRef.current.getAllElements().filter((el) =>
-          selectedElementIds.includes(el.id)
-        );
+        const selectedElements = elementManagerRef.current
+          .getAllElements()
+          .filter((el) => selectedElementIds.includes(el.id));
 
         // 각 요소를 히스토리에 기록
         selectedElements.forEach((element) => {
@@ -82,19 +82,21 @@ export default function PDFEditor({ file, onBack }: PDFEditorProps) {
 
         // 히스토리 상태 업데이트
         const historyState = historyManagerRef.current.getState();
-        dispatch(setHistoryState({
-          canUndo: historyState.canUndo,
-          canRedo: historyState.canRedo,
-          count: historyState.undoCount,
-        }));
+        dispatch(
+          setHistoryState({
+            canUndo: historyState.canUndo,
+            canRedo: historyState.canRedo,
+            count: historyState.undoCount,
+          }),
+        );
       }
     },
-    { enableOnFormTags: false }
+    { enableOnFormTags: false },
   );
 
   // Ctrl+Z: Undo
   useHotkeys(
-    'ctrl+z, meta+z',
+    "ctrl+z, meta+z",
     (e) => {
       e.preventDefault();
       if (canUndo) {
@@ -103,42 +105,49 @@ export default function PDFEditor({ file, onBack }: PDFEditorProps) {
 
         // Undo 로직
         switch (action.type) {
-          case 'add':
+          case "add":
             if (action.after) {
               dispatch(deleteElement(action.elementId));
               elementManagerRef.current.deleteElement(action.elementId);
             }
             break;
-          case 'delete':
+          case "delete":
             if (action.before) {
               dispatch(addElement(action.before));
               elementManagerRef.current.addElement(action.before);
             }
             break;
-          case 'update':
+          case "update":
             if (action.before) {
-              dispatch(updateElement({ id: action.elementId, updates: action.before }));
-              elementManagerRef.current.updateElement(action.elementId, action.before);
+              dispatch(
+                updateElement({ id: action.elementId, updates: action.before }),
+              );
+              elementManagerRef.current.updateElement(
+                action.elementId,
+                action.before,
+              );
             }
             break;
         }
 
         // 히스토리 상태 업데이트
         const historyState = historyManagerRef.current.getState();
-        dispatch(setHistoryState({
-          canUndo: historyState.canUndo,
-          canRedo: historyState.canRedo,
-          count: historyState.undoCount,
-        }));
+        dispatch(
+          setHistoryState({
+            canUndo: historyState.canUndo,
+            canRedo: historyState.canRedo,
+            count: historyState.undoCount,
+          }),
+        );
       }
     },
     { enableOnFormTags: false },
-    [canUndo]
+    [canUndo],
   );
 
   // Ctrl+Shift+Z or Ctrl+Y: Redo
   useHotkeys(
-    'ctrl+shift+z, meta+shift+z, ctrl+y, meta+y',
+    "ctrl+shift+z, meta+shift+z, ctrl+y, meta+y",
     (e) => {
       e.preventDefault();
       if (canRedo) {
@@ -147,35 +156,42 @@ export default function PDFEditor({ file, onBack }: PDFEditorProps) {
 
         // Redo 로직
         switch (action.type) {
-          case 'add':
+          case "add":
             if (action.after) {
               dispatch(addElement(action.after));
               elementManagerRef.current.addElement(action.after);
             }
             break;
-          case 'delete':
+          case "delete":
             dispatch(deleteElement(action.elementId));
             elementManagerRef.current.deleteElement(action.elementId);
             break;
-          case 'update':
+          case "update":
             if (action.after) {
-              dispatch(updateElement({ id: action.elementId, updates: action.after }));
-              elementManagerRef.current.updateElement(action.elementId, action.after);
+              dispatch(
+                updateElement({ id: action.elementId, updates: action.after }),
+              );
+              elementManagerRef.current.updateElement(
+                action.elementId,
+                action.after,
+              );
             }
             break;
         }
 
         // 히스토리 상태 업데이트
         const historyState = historyManagerRef.current.getState();
-        dispatch(setHistoryState({
-          canUndo: historyState.canUndo,
-          canRedo: historyState.canRedo,
-          count: historyState.undoCount,
-        }));
+        dispatch(
+          setHistoryState({
+            canUndo: historyState.canUndo,
+            canRedo: historyState.canRedo,
+            count: historyState.undoCount,
+          }),
+        );
       }
     },
     { enableOnFormTags: false },
-    [canRedo]
+    [canRedo],
   );
 
   // PDF 로드 및 초기화
@@ -192,7 +208,7 @@ export default function PDFEditor({ file, onBack }: PDFEditorProps) {
 
     // 초기화 플래그 설정 및 상태 즉시 초기화
     initializedRef.current = true;
-    dispatch(setPages([]));  // pages를 먼저 빈 배열로 초기화
+    dispatch(setPages([])); // pages를 먼저 빈 배열로 초기화
 
     let cancelled = false;
 
@@ -229,11 +245,9 @@ export default function PDFEditor({ file, onBack }: PDFEditorProps) {
         dispatch(setLoading(false));
       } catch (err) {
         if (!cancelled) {
-          console.error('PDF load error:', err);
+          console.error("PDF load error:", err);
           dispatch(
-            setError(
-              err instanceof Error ? err.message : 'Failed to load PDF'
-            )
+            setError(err instanceof Error ? err.message : "Failed to load PDF"),
           );
         }
       }
@@ -250,23 +264,23 @@ export default function PDFEditor({ file, onBack }: PDFEditorProps) {
   // 캔버스 크기 조정
   useEffect(() => {
     const handleResize = () => {
-      const mainContent = document.querySelector('.pdf-editor-main');
+      const mainContent = document.querySelector(".pdf-editor-main");
       if (mainContent) {
         const rect = mainContent.getBoundingClientRect();
         dispatch(
           setCanvasSize({
             width: rect.width,
             height: rect.height,
-          })
+          }),
         );
       }
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, [dispatch, showSidebar, showProperties]);
 
@@ -274,7 +288,9 @@ export default function PDFEditor({ file, onBack }: PDFEditorProps) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-destructive mb-2">오류 발생</h2>
+          <h2 className="text-2xl font-bold text-destructive mb-2">
+            오류 발생
+          </h2>
           <p className="text-muted-foreground">{error}</p>
         </div>
       </div>
@@ -324,9 +340,7 @@ export default function PDFEditor({ file, onBack }: PDFEditorProps) {
 
         {/* 속성 패널 */}
         {showProperties && (
-          <PropertiesPanel
-            elementManager={elementManagerRef.current}
-          />
+          <PropertiesPanel elementManager={elementManagerRef.current} />
         )}
       </div>
     </div>

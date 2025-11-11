@@ -1,18 +1,21 @@
-'use client';
+"use client";
 
-import { useRef } from 'react';
-import { useAppDispatch } from '@/store/hooks';
-import { addElement } from '@/store/slices/editorSlice';
-import type { ImageElement } from '@/lib/pdf-editor/types';
-import { Button } from '@/components/ui/button';
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon } from "lucide-react";
+import { useRef } from "react";
+import { Button } from "@/components/ui/button";
+import type { ImageElement } from "@/lib/pdf-editor/types";
+import { useAppDispatch } from "@/store/hooks";
+import { addElement } from "@/store/slices/editorSlice";
 
 interface ImageToolProps {
   currentPage: number;
   onImageAdded?: (imageElement: ImageElement) => void;
 }
 
-export default function ImageTool({ currentPage, onImageAdded }: ImageToolProps) {
+export default function ImageTool({
+  currentPage,
+  onImageAdded,
+}: ImageToolProps) {
   const dispatch = useAppDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -21,8 +24,8 @@ export default function ImageTool({ currentPage, onImageAdded }: ImageToolProps)
     if (!file) return;
 
     // 이미지 파일 타입 검증
-    if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 업로드할 수 있습니다.');
+    if (!file.type.startsWith("image/")) {
+      alert("이미지 파일만 업로드할 수 있습니다.");
       return;
     }
 
@@ -36,7 +39,7 @@ export default function ImageTool({ currentPage, onImageAdded }: ImageToolProps)
       // 이미지 요소 생성
       const imageElement: ImageElement = {
         id: `image-${Date.now()}`,
-        type: 'image',
+        type: "image",
         pageNumber: currentPage,
         x: 100, // 기본 위치
         y: 100,
@@ -53,13 +56,13 @@ export default function ImageTool({ currentPage, onImageAdded }: ImageToolProps)
         onImageAdded(imageElement);
       }
     } catch (error) {
-      console.error('Failed to upload image:', error);
-      alert('이미지 업로드에 실패했습니다.');
+      console.error("Failed to upload image:", error);
+      alert("이미지 업로드에 실패했습니다.");
     }
 
     // 파일 입력 초기화 (같은 파일 재선택 가능하도록)
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -93,10 +96,10 @@ function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === 'string') {
+      if (typeof reader.result === "string") {
         resolve(reader.result);
       } else {
-        reject(new Error('Failed to read file'));
+        reject(new Error("Failed to read file"));
       }
     };
     reader.onerror = reject;
@@ -106,7 +109,7 @@ function fileToBase64(file: File): Promise<string> {
 
 // 이미지 크기 가져오기
 function getImageDimensions(
-  base64: string
+  base64: string,
 ): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const img = new Image();

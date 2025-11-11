@@ -21,7 +21,8 @@ export const en = {
   // Hero Section
   hero: {
     title: "Online tools for PDF lovers",
-    description: "Merge PDF, split PDF, compress PDF, office to PDF, PDF to JPG and more!",
+    description:
+      "Merge PDF, split PDF, compress PDF, office to PDF, PDF to JPG and more!",
   },
 
   // Tool Names
@@ -57,14 +58,21 @@ export const en = {
 
   // Tool Descriptions
   toolDescriptions: {
-    merge: "Combine multiple PDF files into one. Merge PDF files easily with our free online PDF merger tool.",
-    split: "Split PDF into multiple files. Extract specific pages from your PDF with our free online PDF splitter.",
-    compress: "Reduce PDF file size. Optimize your PDF files without quality loss using our free online PDF compressor.",
-    rotate: "Rotate PDF pages. Adjust page orientation with our free online PDF rotation tool.",
+    merge:
+      "Combine multiple PDF files into one. Merge PDF files easily with our free online PDF merger tool.",
+    split:
+      "Split PDF into multiple files. Extract specific pages from your PDF with our free online PDF splitter.",
+    compress:
+      "Reduce PDF file size. Optimize your PDF files without quality loss using our free online PDF compressor.",
+    rotate:
+      "Rotate PDF pages. Adjust page orientation with our free online PDF rotation tool.",
     edit: "Edit PDF content. Modify text and images in your PDF with our free online PDF editor.",
-    protect: "Protect PDF with password. Secure your PDF files by adding a password with our free online tool.",
-    wordToPdf: "Convert Word to PDF. Transform DOCX files to PDF using our free online Word to PDF converter.",
-    pdfToJpg: "Convert PDF to images. Extract each page as an image with our free online PDF to JPG converter.",
+    protect:
+      "Protect PDF with password. Secure your PDF files by adding a password with our free online tool.",
+    wordToPdf:
+      "Convert Word to PDF. Transform DOCX files to PDF using our free online Word to PDF converter.",
+    pdfToJpg:
+      "Convert PDF to images. Extract each page as an image with our free online PDF to JPG converter.",
   },
 
   // Common

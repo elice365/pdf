@@ -8,8 +8,8 @@ import {
   ScanText,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
 import type { PDFPageProxy } from "pdfjs-dist/types/src/display/api";
+import { useMemo, useState } from "react";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
 import { Button } from "@/components/ui/button";
@@ -37,8 +37,7 @@ const DEFAULT_LANGUAGE = LANGUAGE_OPTIONS[0]?.value ?? "kor+eng";
 const PDF_WORKER_SRC = "/pdf.worker.min.mjs";
 const PDF_RENDER_SCALE = 2;
 const TESSERACT_ASSETS = {
-  workerPath:
-    "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js",
+  workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js",
   corePath:
     "https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core.wasm.js",
   langPath: "https://tessdata.projectnaptha.com/4.0.0",
@@ -70,7 +69,10 @@ async function loadPdfjs(): Promise<PdfJsLib> {
   return pdfjsLib;
 }
 
-async function renderPageToCanvas(page: PDFPageProxy, scale = PDF_RENDER_SCALE) {
+async function renderPageToCanvas(
+  page: PDFPageProxy,
+  scale = PDF_RENDER_SCALE,
+) {
   const viewport = page.getViewport({ scale });
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
@@ -112,7 +114,10 @@ export default function OcrPdfPage() {
     }
 
     const numericPageLimit = pageLimit ? Number.parseInt(pageLimit, 10) : null;
-    if (numericPageLimit !== null && (Number.isNaN(numericPageLimit) || numericPageLimit <= 0)) {
+    if (
+      numericPageLimit !== null &&
+      (Number.isNaN(numericPageLimit) || numericPageLimit <= 0)
+    ) {
       dispatch(setError("페이지 제한은 1 이상의 숫자여야 합니다."));
       return;
     }
@@ -202,7 +207,9 @@ export default function OcrPdfPage() {
       console.error("OCR 분석 오류:", error);
       dispatch(
         setError(
-          error instanceof Error ? error.message : "OCR 처리 중 오류가 발생했습니다.",
+          error instanceof Error
+            ? error.message
+            : "OCR 처리 중 오류가 발생했습니다.",
         ),
       );
     } finally {
@@ -223,7 +230,9 @@ export default function OcrPdfPage() {
 
   const handleDownloadText = () => {
     if (!ocrResult?.text) return;
-    const blob = new Blob([ocrResult.text], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([ocrResult.text], {
+      type: "text/plain;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -293,7 +302,8 @@ export default function OcrPdfPage() {
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    여러 언어를 동시에 인식해야 한다면 `+`로 연결된 옵션을 선택하세요.
+                    여러 언어를 동시에 인식해야 한다면 `+`로 연결된 옵션을
+                    선택하세요.
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -343,25 +353,41 @@ export default function OcrPdfPage() {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                    <ScanText className="w-5 h-5 text-success" aria-hidden="true" />
+                    <ScanText
+                      className="w-5 h-5 text-success"
+                      aria-hidden="true"
+                    />
                   </div>
                   <div>
                     <p className="font-medium text-foreground">OCR 완료!</p>
                     <p className="text-sm text-muted-foreground">
-                      {ocrResult.processedPages} / {ocrResult.totalPages} 페이지 인식
+                      {ocrResult.processedPages} / {ocrResult.totalPages} 페이지
+                      인식
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <Button variant="outline" onClick={handleCopyText} className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleCopyText}
+                    className="flex items-center gap-2"
+                  >
                     <ClipboardCopy className="w-4 h-4" />
                     {copyLabel}
                   </Button>
-                  <Button variant="outline" onClick={handleDownloadText} className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleDownloadText}
+                    className="flex items-center gap-2"
+                  >
                     <Download className="w-4 h-4" />
                     텍스트 다운로드
                   </Button>
-                  <Button variant="outline" onClick={handleReset} className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleReset}
+                    className="flex items-center gap-2"
+                  >
                     다시 시작
                   </Button>
                 </div>
@@ -382,12 +408,16 @@ export default function OcrPdfPage() {
                 </Card>
                 <Card className="p-4 bg-background">
                   <p className="text-xs text-muted-foreground">텍스트 길이</p>
-                  <p className="text-2xl font-bold text-foreground">{totalTextLength.toLocaleString()}자</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {totalTextLength.toLocaleString()}자
+                  </p>
                 </Card>
               </div>
 
               <div>
-                <p className="text-sm font-medium text-foreground mb-2">인식된 텍스트</p>
+                <p className="text-sm font-medium text-foreground mb-2">
+                  인식된 텍스트
+                </p>
                 <textarea
                   readOnly
                   value={ocrResult.text}
@@ -396,14 +426,18 @@ export default function OcrPdfPage() {
               </div>
 
               <div className="space-y-4">
-                <p className="text-sm font-medium text-foreground">페이지별 결과</p>
+                <p className="text-sm font-medium text-foreground">
+                  페이지별 결과
+                </p>
                 <div className="space-y-3">
                   {ocrResult.pages.map((page) => (
                     <Card key={page.page} className="p-4 bg-background">
                       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4 text-primary" />
-                          <p className="text-sm font-medium text-foreground">페이지 {page.page}</p>
+                          <p className="text-sm font-medium text-foreground">
+                            페이지 {page.page}
+                          </p>
                         </div>
                         <p className="text-xs text-muted-foreground">
                           신뢰도 {page.confidence}%

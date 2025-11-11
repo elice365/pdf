@@ -3,12 +3,12 @@
 import { ArrowLeft, Edit } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import PDFEditor from "@/components/pdf-editor/PDFEditor";
 import { FileUpload } from "@/components/pdf/file-upload";
+import PDFEditor from "@/components/pdf-editor/PDFEditor";
 import { Card } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { resetState } from "@/store/slices/pdfSlice";
 import { resetEditor } from "@/store/slices/editorSlice";
+import { resetState } from "@/store/slices/pdfSlice";
 
 export default function EditPdfPage() {
   const dispatch = useAppDispatch();
@@ -30,7 +30,9 @@ export default function EditPdfPage() {
 
   // 편집 모드일 때는 전체 화면 편집기 표시
   if (isEditing && files.length > 0) {
-    return <PDFEditor key={files[0].name} file={files[0]} onBack={handleReset} />;
+    return (
+      <PDFEditor key={files[0].name} file={files[0]} onBack={handleReset} />
+    );
   }
 
   // 파일 업로드 화면 (공통 패턴 사용)

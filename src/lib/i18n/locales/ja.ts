@@ -21,7 +21,8 @@ export const ja = {
   // Hero Section
   hero: {
     title: "PDFファンのためのオンラインツール",
-    description: "PDF結合、PDF分割、PDF圧縮、OfficeからPDF、PDFからJPGへの変換など！",
+    description:
+      "PDF結合、PDF分割、PDF圧縮、OfficeからPDF、PDFからJPGへの変換など！",
   },
 
   // Tool Names
@@ -57,14 +58,21 @@ export const ja = {
 
   // Tool Descriptions
   toolDescriptions: {
-    merge: "複数のPDFファイルを1つに結合します。無料オンラインPDF結合ツールで簡単にPDFを結合できます。",
-    split: "PDFを複数のファイルに分割します。無料オンラインPDF分割ツールで必要なページを抽出できます。",
-    compress: "PDFファイルサイズを削減します。無料オンラインPDF圧縮ツールで品質を損なわずにファイルサイズを最適化できます。",
-    rotate: "PDFページを回転します。無料オンラインPDF回転ツールでページの向きを調整できます。",
+    merge:
+      "複数のPDFファイルを1つに結合します。無料オンラインPDF結合ツールで簡単にPDFを結合できます。",
+    split:
+      "PDFを複数のファイルに分割します。無料オンラインPDF分割ツールで必要なページを抽出できます。",
+    compress:
+      "PDFファイルサイズを削減します。無料オンラインPDF圧縮ツールで品質を損なわずにファイルサイズを最適化できます。",
+    rotate:
+      "PDFページを回転します。無料オンラインPDF回転ツールでページの向きを調整できます。",
     edit: "PDFコンテンツを編集します。無料オンラインPDF編集ツールでテキストや画像を変更できます。",
-    protect: "パスワードでPDFを保護します。無料オンラインPDF保護ツールでファイルにパスワードを設定できます。",
-    wordToPdf: "WordファイルをPDFに変換します。無料オンラインWord to PDF変換ツールをご利用ください。",
-    pdfToJpg: "PDFを画像に変換します。無料オンラインPDF to JPG変換ツールで各ページを画像として抽出できます。",
+    protect:
+      "パスワードでPDFを保護します。無料オンラインPDF保護ツールでファイルにパスワードを設定できます。",
+    wordToPdf:
+      "WordファイルをPDFに変換します。無料オンラインWord to PDF変換ツールをご利用ください。",
+    pdfToJpg:
+      "PDFを画像に変換します。無料オンラインPDF to JPG変換ツールで各ページを画像として抽出できます。",
   },
 
   // Common

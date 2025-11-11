@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { PDFDocument, PDFName, PDFString, PDFDict, PDFArray } from "pdf-lib";
+import { PDFArray, PDFDict, PDFDocument, PDFName, PDFString } from "pdf-lib";
 
 export async function POST(request: NextRequest) {
   try {

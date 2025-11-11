@@ -1,54 +1,57 @@
-'use client';
+"use client";
 
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
-  setTool,
-  setSelectedShapeType,
-  zoomIn,
-  zoomOut,
-  resetZoom,
-  toggleSidebar,
-  toggleProperties,
-  nextPage,
-  previousPage,
-  setSaving,
-  setError,
-  deleteSelectedElements,
-  addElement,
-  updateElement,
-  deleteElement,
-  setHistoryState,
-  bringToFront,
-  sendToBack,
-} from '@/store/slices/editorSlice';
-import { exportPDF, downloadPDF } from '@/lib/pdf-editor/export';
-import type { ToolType, TextElement } from '@/lib/pdf-editor/types';
-import type { PDFRenderer } from '@/lib/pdf-editor/renderer';
-import type { ElementManager } from '@/lib/pdf-editor/element-manager';
-import type { HistoryManager, HistoryAction } from '@/lib/pdf-editor/history-manager';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import {
-  MousePointer2,
-  Type,
-  Image as ImageIcon,
-  Square,
-  Circle,
-  Minus,
-  Download,
-  ZoomIn,
-  ZoomOut,
-  Undo,
-  Redo,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  SidebarIcon,
-  Settings,
-  ArrowUp,
   ArrowDown,
   ArrowLeft,
-} from 'lucide-react';
+  ArrowUp,
+  ChevronLeft,
+  ChevronRight,
+  Circle,
+  Download,
+  Image as ImageIcon,
+  Minus,
+  MousePointer2,
+  Redo,
+  Settings,
+  SidebarIcon,
+  Square,
+  Trash2,
+  Type,
+  Undo,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import type { ElementManager } from "@/lib/pdf-editor/element-manager";
+import { downloadPDF, exportPDF } from "@/lib/pdf-editor/export";
+import type {
+  HistoryAction,
+  HistoryManager,
+} from "@/lib/pdf-editor/history-manager";
+import type { PDFRenderer } from "@/lib/pdf-editor/renderer";
+import type { TextElement, ToolType } from "@/lib/pdf-editor/types";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  addElement,
+  bringToFront,
+  deleteElement,
+  deleteSelectedElements,
+  nextPage,
+  previousPage,
+  resetZoom,
+  sendToBack,
+  setError,
+  setHistoryState,
+  setSaving,
+  setSelectedShapeType,
+  setTool,
+  toggleProperties,
+  toggleSidebar,
+  updateElement,
+  zoomIn,
+  zoomOut,
+} from "@/store/slices/editorSlice";
 
 interface ToolbarProps {
   renderer: PDFRenderer;
@@ -80,12 +83,13 @@ export default function Toolbar({
     selectedElementIds,
   } = useAppSelector((state) => state.editor);
 
-  const tools: Array<{ type: ToolType; icon: React.ReactNode; label: string }> = [
-    { type: 'select', icon: <MousePointer2 size={18} />, label: '선택' },
-    { type: 'text', icon: <Type size={18} />, label: '텍스트' },
-    { type: 'image', icon: <ImageIcon size={18} />, label: '이미지' },
-    { type: 'shape', icon: <Square size={18} />, label: '도형' },
-  ];
+  const tools: Array<{ type: ToolType; icon: React.ReactNode; label: string }> =
+    [
+      { type: "select", icon: <MousePointer2 size={18} />, label: "선택" },
+      { type: "text", icon: <Type size={18} />, label: "텍스트" },
+      { type: "image", icon: <ImageIcon size={18} />, label: "이미지" },
+      { type: "shape", icon: <Square size={18} />, label: "도형" },
+    ];
 
   const handleToolChange = (tool: ToolType) => {
     dispatch(setTool(tool));
@@ -94,9 +98,9 @@ export default function Toolbar({
   // 선택된 텍스트 요소 가져오기
   const selectedTextElement =
     selectedElementIds.length === 1
-      ? elements.find(
-          (el) => el.id === selectedElementIds[0] && el.type === 'text'
-        ) as TextElement | undefined
+      ? (elements.find(
+          (el) => el.id === selectedElementIds[0] && el.type === "text",
+        ) as TextElement | undefined)
       : undefined;
 
   // 텍스트 속성 업데이트 핸들러
@@ -113,24 +117,26 @@ export default function Toolbar({
 
     // Undo 로직: 액션 타입에 따라 역방향 처리
     switch (action.type) {
-      case 'add':
+      case "add":
         // 추가된 요소를 삭제
         if (action.after) {
           dispatch(deleteElement(action.elementId));
           elementManager.deleteElement(action.elementId);
         }
         break;
-      case 'delete':
+      case "delete":
         // 삭제된 요소를 복원
         if (action.before) {
           dispatch(addElement(action.before));
           elementManager.addElement(action.before);
         }
         break;
-      case 'update':
+      case "update":
         // 이전 상태로 복원
         if (action.before) {
-          dispatch(updateElement({ id: action.elementId, updates: action.before }));
+          dispatch(
+            updateElement({ id: action.elementId, updates: action.before }),
+          );
           elementManager.updateElement(action.elementId, action.before);
         }
         break;
@@ -138,11 +144,13 @@ export default function Toolbar({
 
     // 히스토리 상태 업데이트
     const historyState = historyManager.getState();
-    dispatch(setHistoryState({
-      canUndo: historyState.canUndo,
-      canRedo: historyState.canRedo,
-      count: historyState.undoCount,
-    }));
+    dispatch(
+      setHistoryState({
+        canUndo: historyState.canUndo,
+        canRedo: historyState.canRedo,
+        count: historyState.undoCount,
+      }),
+    );
   };
 
   const handleRedo = () => {
@@ -151,22 +159,24 @@ export default function Toolbar({
 
     // Redo 로직: 액션 타입에 따라 정방향 처리
     switch (action.type) {
-      case 'add':
+      case "add":
         // 요소를 다시 추가
         if (action.after) {
           dispatch(addElement(action.after));
           elementManager.addElement(action.after);
         }
         break;
-      case 'delete':
+      case "delete":
         // 요소를 다시 삭제
         dispatch(deleteElement(action.elementId));
         elementManager.deleteElement(action.elementId);
         break;
-      case 'update':
+      case "update":
         // 이후 상태로 적용
         if (action.after) {
-          dispatch(updateElement({ id: action.elementId, updates: action.after }));
+          dispatch(
+            updateElement({ id: action.elementId, updates: action.after }),
+          );
           elementManager.updateElement(action.elementId, action.after);
         }
         break;
@@ -174,11 +184,13 @@ export default function Toolbar({
 
     // 히스토리 상태 업데이트
     const historyState = historyManager.getState();
-    dispatch(setHistoryState({
-      canUndo: historyState.canUndo,
-      canRedo: historyState.canRedo,
-      count: historyState.undoCount,
-    }));
+    dispatch(
+      setHistoryState({
+        canUndo: historyState.canUndo,
+        canRedo: historyState.canRedo,
+        count: historyState.undoCount,
+      }),
+    );
   };
 
   const handleDelete = () => {
@@ -186,7 +198,7 @@ export default function Toolbar({
 
     // 삭제 전에 선택된 요소들의 정보 가져오기
     const selectedElements = elements.filter((el) =>
-      selectedElementIds.includes(el.id)
+      selectedElementIds.includes(el.id),
     );
 
     // 각 요소를 히스토리에 기록
@@ -200,23 +212,25 @@ export default function Toolbar({
 
     // 히스토리 상태 업데이트
     const historyState = historyManager.getState();
-    dispatch(setHistoryState({
-      canUndo: historyState.canUndo,
-      canRedo: historyState.canRedo,
-      count: historyState.undoCount,
-    }));
+    dispatch(
+      setHistoryState({
+        canUndo: historyState.canUndo,
+        canRedo: historyState.canRedo,
+        count: historyState.undoCount,
+      }),
+    );
   };
 
   const handleDownload = async () => {
     if (!pdfFile) {
-      alert('PDF 파일이 로드되지 않았습니다.');
+      alert("PDF 파일이 로드되지 않았습니다.");
       return;
     }
 
-    console.log('=== 다운로드 시작 ===');
-    console.log('Redux elements:', elements);
-    console.log('ElementManager 전체 요소:', elementManager.getAllElements());
-    console.log('현재 페이지:', currentPage);
+    console.log("=== 다운로드 시작 ===");
+    console.log("Redux elements:", elements);
+    console.log("ElementManager 전체 요소:", elementManager.getAllElements());
+    console.log("현재 페이지:", currentPage);
 
     try {
       dispatch(setSaving(true));
@@ -226,16 +240,16 @@ export default function Toolbar({
       const base64 = btoa(
         new Uint8Array(arrayBuffer).reduce(
           (data, byte) => data + String.fromCharCode(byte),
-          ''
-        )
+          "",
+        ),
       );
 
       // ElementManager에서 최신 요소 가져오기 (Redux 대신)
       const currentElements = elementManager.getAllElements();
 
-      console.log('=== 다운로드 시 ElementManager 요소 ===');
-      console.log('총 요소 개수:', currentElements.length);
-      console.log('요소 목록:', currentElements);
+      console.log("=== 다운로드 시 ElementManager 요소 ===");
+      console.log("총 요소 개수:", currentElements.length);
+      console.log("요소 목록:", currentElements);
 
       // 각 요소의 상세 정보 출력
       currentElements.forEach((el, index) => {
@@ -243,7 +257,7 @@ export default function Toolbar({
           id: el.id,
           type: el.type,
           pageNumber: el.pageNumber,
-          ...(el.type === 'text' ? { content: (el as any).content } : {}),
+          ...(el.type === "text" ? { content: (el as any).content } : {}),
           x: el.x,
           y: el.y,
           width: el.width,
@@ -259,34 +273,31 @@ export default function Toolbar({
           pageCount: totalPages,
         },
         {
-          fileName: pdfFile.name.replace('.pdf', '_edited.pdf'),
-          quality: 'high',
-          format: 'pdf',
-        }
+          fileName: pdfFile.name.replace(".pdf", "_edited.pdf"),
+          quality: "high",
+          format: "pdf",
+        },
       );
 
       if (result.success && result.data) {
         // 다운로드
-        downloadPDF(
-          result.data,
-          pdfFile.name.replace('.pdf', '_edited.pdf')
-        );
+        downloadPDF(result.data, pdfFile.name.replace(".pdf", "_edited.pdf"));
       } else {
-        throw new Error(result.error || 'Failed to export PDF');
+        throw new Error(result.error || "Failed to export PDF");
       }
 
       dispatch(setSaving(false));
     } catch (error) {
-      console.error('Download error:', error);
+      console.error("Download error:", error);
       dispatch(setSaving(false));
       dispatch(
         setError(
           error instanceof Error
             ? error.message
-            : 'PDF 다운로드에 실패했습니다.'
-        )
+            : "PDF 다운로드에 실패했습니다.",
+        ),
       );
-      alert('PDF 다운로드에 실패했습니다.');
+      alert("PDF 다운로드에 실패했습니다.");
     }
   };
 
@@ -295,12 +306,7 @@ export default function Toolbar({
       {/* 돌아가기 버튼 */}
       {onBack && (
         <>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            title="돌아가기"
-          >
+          <Button variant="ghost" size="sm" onClick={onBack} title="돌아가기">
             <ArrowLeft className="w-4 h-4 mr-2" />
             돌아가기
           </Button>
@@ -313,7 +319,7 @@ export default function Toolbar({
         {tools.map((tool) => (
           <Button
             key={tool.type}
-            variant={currentTool === tool.type ? 'default' : 'ghost'}
+            variant={currentTool === tool.type ? "default" : "ghost"}
             size="sm"
             onClick={() => handleToolChange(tool.type)}
             title={tool.label}
@@ -324,30 +330,30 @@ export default function Toolbar({
       </div>
 
       {/* 도형 타입 선택 (도형 도구 선택 시에만 표시) */}
-      {currentTool === 'shape' && (
+      {currentTool === "shape" && (
         <>
           <Separator orientation="vertical" className="h-6" />
           <div className="flex items-center gap-1">
             <Button
-              variant={selectedShapeType === 'rectangle' ? 'default' : 'ghost'}
+              variant={selectedShapeType === "rectangle" ? "default" : "ghost"}
               size="sm"
-              onClick={() => dispatch(setSelectedShapeType('rectangle'))}
+              onClick={() => dispatch(setSelectedShapeType("rectangle"))}
               title="사각형"
             >
               <Square size={18} />
             </Button>
             <Button
-              variant={selectedShapeType === 'circle' ? 'default' : 'ghost'}
+              variant={selectedShapeType === "circle" ? "default" : "ghost"}
               size="sm"
-              onClick={() => dispatch(setSelectedShapeType('circle'))}
+              onClick={() => dispatch(setSelectedShapeType("circle"))}
               title="원"
             >
               <Circle size={18} />
             </Button>
             <Button
-              variant={selectedShapeType === 'line' ? 'default' : 'ghost'}
+              variant={selectedShapeType === "line" ? "default" : "ghost"}
               size="sm"
-              onClick={() => dispatch(setSelectedShapeType('line'))}
+              onClick={() => dispatch(setSelectedShapeType("line"))}
               title="선"
             >
               <Minus size={18} />
@@ -397,7 +403,9 @@ export default function Toolbar({
             {/* 폰트 선택 */}
             <select
               value={selectedTextElement.fontFamily}
-              onChange={(e) => handleTextPropertyUpdate({ fontFamily: e.target.value })}
+              onChange={(e) =>
+                handleTextPropertyUpdate({ fontFamily: e.target.value })
+              }
               className="h-8 px-2 text-xs border border rounded bg-background focus:outline-none focus:ring-2 focus:ring-primary"
               title="폰트"
             >
@@ -429,46 +437,60 @@ export default function Toolbar({
 
             {/* 색상 프리셋 */}
             <div className="flex gap-1">
-              {['#000000', '#E5322D', '#4299E1', '#48BB78', '#F6BD60'].map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => handleTextPropertyUpdate({ fontColor: color })}
-                  className={`w-6 h-6 rounded border-2 hover:scale-110 transition-transform ${
-                    selectedTextElement.fontColor === color
-                      ? 'border-foreground'
-                      : 'border'
-                  }`}
-                  style={{ backgroundColor: color }}
-                  title={color}
-                />
-              ))}
+              {["#000000", "#E5322D", "#4299E1", "#48BB78", "#F6BD60"].map(
+                (color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() =>
+                      handleTextPropertyUpdate({ fontColor: color })
+                    }
+                    className={`w-6 h-6 rounded border-2 hover:scale-110 transition-transform ${
+                      selectedTextElement.fontColor === color
+                        ? "border-foreground"
+                        : "border"
+                    }`}
+                    style={{ backgroundColor: color }}
+                    title={color}
+                  />
+                ),
+              )}
             </div>
 
             {/* B/I/U 버튼 */}
             <div className="flex gap-1">
               <Button
-                variant={selectedTextElement.bold ? 'default' : 'ghost'}
+                variant={selectedTextElement.bold ? "default" : "ghost"}
                 size="sm"
-                onClick={() => handleTextPropertyUpdate({ bold: !selectedTextElement.bold })}
+                onClick={() =>
+                  handleTextPropertyUpdate({ bold: !selectedTextElement.bold })
+                }
                 className="w-7 h-7 p-0 font-bold"
                 title="굵게"
               >
                 B
               </Button>
               <Button
-                variant={selectedTextElement.italic ? 'default' : 'ghost'}
+                variant={selectedTextElement.italic ? "default" : "ghost"}
                 size="sm"
-                onClick={() => handleTextPropertyUpdate({ italic: !selectedTextElement.italic })}
+                onClick={() =>
+                  handleTextPropertyUpdate({
+                    italic: !selectedTextElement.italic,
+                  })
+                }
                 className="w-7 h-7 p-0 italic"
                 title="기울임"
               >
                 I
               </Button>
               <Button
-                variant={selectedTextElement.underline ? 'default' : 'ghost'}
+                variant={selectedTextElement.underline ? "default" : "ghost"}
                 size="sm"
-                onClick={() => handleTextPropertyUpdate({ underline: !selectedTextElement.underline })}
+                onClick={() =>
+                  handleTextPropertyUpdate({
+                    underline: !selectedTextElement.underline,
+                  })
+                }
                 className="w-7 h-7 p-0 underline"
                 title="밑줄"
               >
@@ -574,7 +596,7 @@ export default function Toolbar({
       {/* UI 토글 */}
       <div className="flex items-center gap-1">
         <Button
-          variant={showSidebar ? 'default' : 'ghost'}
+          variant={showSidebar ? "default" : "ghost"}
           size="sm"
           onClick={() => dispatch(toggleSidebar())}
           title="사이드바 토글"
@@ -582,7 +604,7 @@ export default function Toolbar({
           <SidebarIcon size={18} />
         </Button>
         <Button
-          variant={showProperties ? 'default' : 'ghost'}
+          variant={showProperties ? "default" : "ghost"}
           size="sm"
           onClick={() => dispatch(toggleProperties())}
           title="속성 패널 토글"
@@ -594,9 +616,13 @@ export default function Toolbar({
       <Separator orientation="vertical" className="h-6" />
 
       {/* 다운로드 */}
-      <Button onClick={handleDownload} size="sm" disabled={isSaving || !pdfFile}>
+      <Button
+        onClick={handleDownload}
+        size="sm"
+        disabled={isSaving || !pdfFile}
+      >
         <Download size={18} className="mr-2" />
-        {isSaving ? '저장 중...' : '다운로드'}
+        {isSaving ? "저장 중..." : "다운로드"}
       </Button>
     </div>
   );

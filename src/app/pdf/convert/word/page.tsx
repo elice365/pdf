@@ -1,10 +1,10 @@
 "use client";
 
+import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 import { ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
+import { useState } from "react";
 import { DownloadButton } from "@/components/pdf/download-button";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
@@ -71,7 +71,7 @@ export default function PdfToWordPage() {
               before: 200,
               after: 100,
             },
-          })
+          }),
         );
 
         // 텍스트 아이템들을 그룹화하여 단락 생성
@@ -122,7 +122,7 @@ export default function PdfToWordPage() {
                 spacing: {
                   after: 120,
                 },
-              })
+              }),
             );
           }
         }
@@ -201,8 +201,8 @@ export default function PdfToWordPage() {
                 브라우저 기반 변환
               </h3>
               <p className="text-xs text-muted-foreground">
-                이 도구는 브라우저에서 직접 PDF 텍스트를 추출하여 Word 문서로 변환합니다.
-                복잡한 레이아웃이나 이미지는 텍스트만 추출됩니다.
+                이 도구는 브라우저에서 직접 PDF 텍스트를 추출하여 Word 문서로
+                변환합니다. 복잡한 레이아웃이나 이미지는 텍스트만 추출됩니다.
               </p>
             </div>
           </div>

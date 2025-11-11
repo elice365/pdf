@@ -1,12 +1,12 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import fontkit from '@pdf-lib/fontkit';
+import fontkit from "@pdf-lib/fontkit";
+import { type NextRequest, NextResponse } from "next/server";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import type {
   EditElement,
-  TextElement,
   ImageElement,
   ShapeElement,
-} from '@/lib/pdf-editor/types';
+  TextElement,
+} from "@/lib/pdf-editor/types";
 
 // 한글 감지 함수
 function containsKorean(text: string): boolean {
@@ -25,18 +25,18 @@ async function loadKoreanFont(): Promise<ArrayBuffer> {
   try {
     // Google Fonts에서 Noto Sans KR 폰트 다운로드
     const response = await fetch(
-      'https://github.com/google/fonts/raw/main/ofl/notosanskr/NotoSansKR-Regular.ttf'
+      "https://github.com/google/fonts/raw/main/ofl/notosanskr/NotoSansKR-Regular.ttf",
     );
 
     if (!response.ok) {
-      throw new Error('Failed to fetch Korean font');
+      throw new Error("Failed to fetch Korean font");
     }
 
     const fontBuffer = await response.arrayBuffer();
     koreanFontCache = fontBuffer;
     return fontBuffer;
   } catch (error) {
-    console.error('Failed to load Korean font:', error);
+    console.error("Failed to load Korean font:", error);
     throw error;
   }
 }
@@ -44,22 +44,22 @@ async function loadKoreanFont(): Promise<ArrayBuffer> {
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const pdfData = formData.get('pdfData') as string;
-    const elementsData = formData.get('elements') as string;
-    const pageCount = parseInt(formData.get('pageCount') as string);
+    const pdfData = formData.get("pdfData") as string;
+    const elementsData = formData.get("elements") as string;
+    const pageCount = parseInt(formData.get("pageCount") as string);
 
-    console.log('=== API 요청 수신 ===');
-    console.log('pageCount:', pageCount);
+    console.log("=== API 요청 수신 ===");
+    console.log("pageCount:", pageCount);
 
     if (!pdfData || !elementsData) {
       return NextResponse.json(
-        { error: 'Missing required data' },
-        { status: 400 }
+        { error: "Missing required data" },
+        { status: 400 },
       );
     }
 
     // Base64 PDF 데이터를 디코드
-    const pdfBytes = Buffer.from(pdfData, 'base64');
+    const pdfBytes = Buffer.from(pdfData, "base64");
 
     // PDF 문서 로드
     const pdfDoc = await PDFDocument.load(pdfBytes);
@@ -70,14 +70,14 @@ export async function POST(request: NextRequest) {
     // 편집 요소 파싱
     const elements: EditElement[] = JSON.parse(elementsData);
 
-    console.log('=== 수신된 요소 ===');
-    console.log('요소 개수:', elements.length);
+    console.log("=== 수신된 요소 ===");
+    console.log("요소 개수:", elements.length);
     elements.forEach((el, index) => {
       console.log(`요소 ${index + 1}:`, {
         id: el.id,
         type: el.type,
         pageNumber: el.pageNumber,
-        ...(el.type === 'text' ? { content: (el as any).content } : {}),
+        ...(el.type === "text" ? { content: (el as any).content } : {}),
         x: el.x,
         y: el.y,
         width: el.width,
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     // 한글이 포함된 텍스트가 있는지 확인
     const hasKoreanText = elements.some(
-      (el) => el.type === 'text' && containsKorean((el as TextElement).content)
+      (el) => el.type === "text" && containsKorean((el as TextElement).content),
     );
 
     // 한글 폰트 미리 로드
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
         const fontBytes = await loadKoreanFont();
         koreanFont = await pdfDoc.embedFont(fontBytes);
       } catch (error) {
-        console.error('Failed to embed Korean font:', error);
+        console.error("Failed to embed Korean font:", error);
         // 폰트 로드 실패 시 계속 진행 (기본 폰트 사용)
       }
     }
@@ -118,11 +118,22 @@ export async function POST(request: NextRequest) {
 
       for (const element of pageElements) {
         try {
-          if (element.type === 'text') {
-            await applyTextElement(pdfDoc, page, element as TextElement, height, koreanFont);
-          } else if (element.type === 'image') {
-            await applyImageElement(pdfDoc, page, element as ImageElement, height);
-          } else if (element.type === 'shape') {
+          if (element.type === "text") {
+            await applyTextElement(
+              pdfDoc,
+              page,
+              element as TextElement,
+              height,
+              koreanFont,
+            );
+          } else if (element.type === "image") {
+            await applyImageElement(
+              pdfDoc,
+              page,
+              element as ImageElement,
+              height,
+            );
+          } else if (element.type === "shape") {
             await applyShapeElement(page, element as ShapeElement, height);
           }
         } catch (error) {
@@ -134,20 +145,20 @@ export async function POST(request: NextRequest) {
 
     // PDF 저장
     const modifiedPdfBytes = await pdfDoc.save();
-    const base64 = Buffer.from(modifiedPdfBytes).toString('base64');
+    const base64 = Buffer.from(modifiedPdfBytes).toString("base64");
 
     return NextResponse.json({
       success: true,
       pdf: base64,
     });
   } catch (error) {
-    console.error('Apply edits error:', error);
+    console.error("Apply edits error:", error);
     return NextResponse.json(
       {
-        error: 'Failed to apply edits',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to apply edits",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -158,7 +169,7 @@ async function applyTextElement(
   page: any,
   element: TextElement,
   pageHeight: number,
-  koreanFont: any = null
+  koreanFont: any = null,
 ) {
   // PDF 좌표계는 하단 왼쪽이 원점이므로 Y 좌표 변환
   const y = pageHeight - element.y - element.height;
@@ -183,7 +194,7 @@ async function applyTextElement(
     color,
     opacity: element.opacity ?? 1,
     rotate: element.rotation
-      ? { type: 'degrees' as const, angle: element.rotation }
+      ? { type: "degrees" as const, angle: element.rotation }
       : undefined,
   });
 }
@@ -193,13 +204,16 @@ async function applyImageElement(
   pdfDoc: any,
   page: any,
   element: ImageElement,
-  pageHeight: number
+  pageHeight: number,
 ) {
   const y = pageHeight - element.y - element.height;
 
   // Base64 이미지 데이터 디코드
-  const imageData = element.imageData.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
-  const imageBytes = Buffer.from(imageData, 'base64');
+  const imageData = element.imageData.replace(
+    /^data:image\/(png|jpeg|jpg);base64,/,
+    "",
+  );
+  const imageBytes = Buffer.from(imageData, "base64");
 
   // 이미지 포맷 감지 및 임베드
   let image;
@@ -209,7 +223,7 @@ async function applyImageElement(
     try {
       image = await pdfDoc.embedJpg(imageBytes);
     } catch (error) {
-      console.error('Failed to embed image:', error);
+      console.error("Failed to embed image:", error);
       return;
     }
   }
@@ -222,7 +236,7 @@ async function applyImageElement(
     height: element.height,
     opacity: element.opacity ?? 1,
     rotate: element.rotation
-      ? { type: 'degrees' as const, angle: element.rotation }
+      ? { type: "degrees" as const, angle: element.rotation }
       : undefined,
   });
 }
@@ -231,16 +245,16 @@ async function applyImageElement(
 async function applyShapeElement(
   page: any,
   element: ShapeElement,
-  pageHeight: number
+  pageHeight: number,
 ) {
   const y = pageHeight - element.y - element.height;
 
   const strokeColor = parseColor(element.strokeColor);
   const fillColor = parseColor(element.fillColor);
 
-  if (element.shapeType === 'rectangle') {
+  if (element.shapeType === "rectangle") {
     // 채우기
-    if (element.fillColor !== 'transparent') {
+    if (element.fillColor !== "transparent") {
       page.drawRectangle({
         x: element.x,
         y,
@@ -249,7 +263,7 @@ async function applyShapeElement(
         color: fillColor,
         opacity: element.opacity ?? 1,
         rotate: element.rotation
-          ? { type: 'degrees' as const, angle: element.rotation }
+          ? { type: "degrees" as const, angle: element.rotation }
           : undefined,
       });
     }
@@ -265,17 +279,17 @@ async function applyShapeElement(
         borderWidth: element.strokeWidth,
         opacity: element.opacity ?? 1,
         rotate: element.rotation
-          ? { type: 'degrees' as const, angle: element.rotation }
+          ? { type: "degrees" as const, angle: element.rotation }
           : undefined,
       });
     }
-  } else if (element.shapeType === 'circle') {
+  } else if (element.shapeType === "circle") {
     const radius = Math.min(element.width, element.height) / 2;
     const centerX = element.x + element.width / 2;
     const centerY = y + element.height / 2;
 
     // 채우기
-    if (element.fillColor !== 'transparent') {
+    if (element.fillColor !== "transparent") {
       page.drawCircle({
         x: centerX,
         y: centerY,
@@ -296,7 +310,7 @@ async function applyShapeElement(
         opacity: element.opacity ?? 1,
       });
     }
-  } else if (element.shapeType === 'line') {
+  } else if (element.shapeType === "line") {
     page.drawLine({
       start: { x: element.x, y },
       end: { x: element.x + element.width, y: y + element.height },
@@ -310,7 +324,7 @@ async function applyShapeElement(
 // 색상 문자열을 RGB로 파싱
 function parseColor(colorString: string) {
   // Hex 색상 파싱
-  if (colorString.startsWith('#')) {
+  if (colorString.startsWith("#")) {
     const hex = colorString.substring(1);
     const r = parseInt(hex.substring(0, 2), 16) / 255;
     const g = parseInt(hex.substring(2, 4), 16) / 255;
@@ -324,7 +338,7 @@ function parseColor(colorString: string) {
     return rgb(
       parseInt(rgbMatch[1]) / 255,
       parseInt(rgbMatch[2]) / 255,
-      parseInt(rgbMatch[3]) / 255
+      parseInt(rgbMatch[3]) / 255,
     );
   }
 
@@ -332,5 +346,5 @@ function parseColor(colorString: string) {
   return rgb(0, 0, 0);
 }
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 export const maxDuration = 60;

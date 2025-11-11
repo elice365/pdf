@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Geist_Mono, Noto_Sans_KR } from "next/font/google";
 import { ClarityAnalytics } from "@/components/analytics/clarity-analytics";
 import { ReduxProvider } from "@/components/providers/redux-provider";
-import { WebApplicationJsonLd } from "@/components/seo/web-application-jsonld";
 import { OrganizationJsonLd } from "@/components/seo/organization-jsonld";
+import { WebApplicationJsonLd } from "@/components/seo/web-application-jsonld";
 import { WebSiteJsonLd } from "@/components/seo/website-jsonld";
 import "./globals.css";
 
@@ -21,7 +21,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+  ),
   title: {
     default: "iLovePDF | PDF를 즐겨 쓰시는 분들을 위한 온라인 PDF 툴",
     template: "%s | iLovePDF",

@@ -1,10 +1,10 @@
 "use client";
 
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import { ArrowLeft, Code, Download } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
 import { Button } from "@/components/ui/button";
@@ -95,7 +95,8 @@ export default function HtmlToPdfPage() {
 
     const link = document.createElement("a");
     link.href = pdfData;
-    link.download = files[0]?.name.replace(/\.[^/.]+$/, ".pdf") || "converted.pdf";
+    link.download =
+      files[0]?.name.replace(/\.[^/.]+$/, ".pdf") || "converted.pdf";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -188,12 +189,16 @@ export default function HtmlToPdfPage() {
                 <p className="text-sm text-muted-foreground">
                   HTML 콘텐츠가 이미지로 변환되어 PDF에 포함되었습니다.
                   <br />
-                  복잡한 HTML의 경우 일부 스타일이나 레이아웃이 다르게 보일 수 있습니다.
+                  복잡한 HTML의 경우 일부 스타일이나 레이아웃이 다르게 보일 수
+                  있습니다.
                 </p>
               </div>
 
               <div className="flex justify-center gap-3">
-                <Button onClick={handleDownload} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button
+                  onClick={handleDownload}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
                   <Download className="w-4 h-4 mr-2" />
                   PDF 다운로드
                 </Button>

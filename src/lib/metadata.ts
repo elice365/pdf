@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 interface ToolMetadata {
   title: string;
@@ -9,7 +9,8 @@ interface ToolMetadata {
 
 export function generateToolMetadata(tool: ToolMetadata): Metadata {
   const fullTitle = `${tool.title} | iLovePDF`;
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.ilovepdf.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.ilovepdf.com";
   const url = `${baseUrl}${tool.path}`;
 
   return {
@@ -66,21 +67,39 @@ export const toolsMetadata: Record<string, ToolMetadata> = {
     title: "PDF 압축",
     description:
       "PDF 파일 크기를 줄입니다. 무료 온라인 PDF 압축 도구로 품질 저하 없이 파일 크기를 최적화하세요.",
-    keywords: ["PDF 압축", "PDF 용량 줄이기", "PDF 최적화", "무료 PDF", "온라인 PDF"],
+    keywords: [
+      "PDF 압축",
+      "PDF 용량 줄이기",
+      "PDF 최적화",
+      "무료 PDF",
+      "온라인 PDF",
+    ],
     path: "/pdf/compress",
   },
   rotate: {
     title: "PDF 회전",
     description:
       "PDF 페이지를 회전합니다. 무료 온라인 PDF 회전 도구로 페이지 방향을 조정하세요.",
-    keywords: ["PDF 회전", "PDF 방향", "PDF 페이지 회전", "무료 PDF", "온라인 PDF"],
+    keywords: [
+      "PDF 회전",
+      "PDF 방향",
+      "PDF 페이지 회전",
+      "무료 PDF",
+      "온라인 PDF",
+    ],
     path: "/pdf/rotate",
   },
   edit: {
     title: "PDF 편집",
     description:
       "PDF 내용을 편집합니다. 무료 온라인 PDF 편집 도구로 텍스트와 이미지를 수정하세요.",
-    keywords: ["PDF 편집", "PDF 수정", "PDF 텍스트 편집", "무료 PDF", "온라인 PDF"],
+    keywords: [
+      "PDF 편집",
+      "PDF 수정",
+      "PDF 텍스트 편집",
+      "무료 PDF",
+      "온라인 PDF",
+    ],
     path: "/pdf/edit",
   },
   protect: {
