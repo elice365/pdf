@@ -121,7 +121,7 @@ export default function PageNumberPage() {
       dispatch(setProgress(95));
 
       const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([Buffer.from(pdfBytes)], {
+      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], {
         type: "application/pdf",
       });
 

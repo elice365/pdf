@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, Download, FileText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { FileUpload } from "@/components/pdf/file-upload";
@@ -32,35 +32,70 @@ export default function ExtractTextPage() {
       dispatch(setOperation("텍스트 추출"));
       dispatch(setProgress(10));
 
+      // Dynamically import pdfjs-dist for client-side text extraction
+      const pdfjsLib = await import("pdfjs-dist");
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
       const file = files[0];
-      const formData = new FormData();
-      formData.append("file", file);
+      const arrayBuffer = await file.arrayBuffer();
+
+      dispatch(setProgress(20));
+
+      // Load PDF document
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdfDoc = await loadingTask.promise;
 
       dispatch(setProgress(30));
 
-      // Call server API for text extraction
-      const response = await fetch("/api/pdf/extract/text", {
-        method: "POST",
-        body: formData,
-      });
+      const totalPages = pdfDoc.numPages;
+      const pageTexts: Array<{ page: number; text: string }> = [];
 
-      dispatch(setProgress(60));
+      // Extract text from each page
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const page = await pdfDoc.getPage(pageNum);
+        const textContent = await page.getTextContent();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "텍스트 추출에 실패했습니다.");
+        // Combine text items into lines
+        const lines: string[] = [];
+        let currentLine = "";
+        let lastY = 0;
+
+        for (const item of textContent.items) {
+          if ("str" in item && "transform" in item) {
+            const y = item.transform[5];
+            const text = item.str;
+
+            // New line if Y position changed significantly
+            if (lastY !== 0 && Math.abs(y - lastY) > 5) {
+              if (currentLine.trim()) {
+                lines.push(currentLine.trim());
+              }
+              currentLine = text;
+            } else {
+              currentLine = currentLine ? `${currentLine} ${text}` : text;
+            }
+            lastY = y;
+          }
+        }
+
+        if (currentLine.trim()) {
+          lines.push(currentLine.trim());
+        }
+
+        const pageText = lines.join("\n");
+        pageTexts.push({ page: pageNum, text: pageText });
+
+        // Update progress
+        const progress = 30 + (pageNum / totalPages) * 60;
+        dispatch(setProgress(Math.round(progress)));
       }
 
-      const result = await response.json();
-
-      dispatch(setProgress(80));
+      dispatch(setProgress(95));
 
       // Format extracted text with page numbers
-      const formattedText = result.textContent
-        .map((page: { page: number; text: string }) => {
-          return `=== 페이지 ${page.page} ===\n${page.text}\n`;
-        })
-        .join("\n");
+      const formattedText = pageTexts
+        .map((entry) => `=== 페이지 ${entry.page} ===\n${entry.text}`)
+        .join("\n\n");
 
       setExtractedText(formattedText);
 
@@ -84,6 +119,20 @@ export default function ExtractTextPage() {
       navigator.clipboard.writeText(extractedText);
       // Show toast or feedback here
     }
+  };
+
+  const handleDownloadText = () => {
+    if (!extractedText) return;
+
+    const blob = new Blob([extractedText], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${files[0]?.name?.replace(/\.pdf$/i, "") || "extracted"}-text.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleReset = () => {
@@ -168,9 +217,15 @@ export default function ExtractTextPage() {
                     </p>
                   </div>
                 </div>
-                <Button onClick={handleCopyText} variant="outline">
-                  텍스트 복사
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleCopyText} variant="outline">
+                    텍스트 복사
+                  </Button>
+                  <Button onClick={handleDownloadText} variant="outline">
+                    <Download className="w-4 h-4 mr-2" />
+                    TXT 다운로드
+                  </Button>
+                </div>
               </div>
 
               <textarea

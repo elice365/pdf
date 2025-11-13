@@ -107,7 +107,7 @@ export default function RotatePdfPage() {
       dispatch(setProgress(80));
 
       const rotatedBytes = await pdfDoc.save();
-      const blob = new Blob([Buffer.from(rotatedBytes)], {
+      const blob = new Blob([rotatedBytes.buffer as ArrayBuffer], {
         type: "application/pdf",
       });
 

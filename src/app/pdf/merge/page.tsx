@@ -55,7 +55,7 @@ export default function MergePdfPage() {
 
       dispatch(setProgress(95));
       const mergedPdfBytes = await mergedPdf.save();
-      const blob = new Blob([Buffer.from(mergedPdfBytes)], {
+      const blob = new Blob([mergedPdfBytes.buffer as ArrayBuffer], {
         type: "application/pdf",
       });
 

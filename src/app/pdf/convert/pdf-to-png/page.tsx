@@ -1,8 +1,7 @@
 "use client";
 
-import { ArrowLeft, Image } from "lucide-react";
+import { ArrowLeft, Download, Image } from "lucide-react";
 import Link from "next/link";
-import { PDFDocument } from "pdf-lib";
 import { useState } from "react";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
@@ -19,12 +18,16 @@ import {
 
 type Quality = "low" | "medium" | "high";
 
+interface ConvertedImage {
+  page: number;
+  dataUrl: string;
+}
+
 export default function PdfToPngPage() {
   const dispatch = useAppDispatch();
   const { files } = useAppSelector((state) => state.pdf);
   const [quality, setQuality] = useState<Quality>("high");
-  const [transparent, setTransparent] = useState<boolean>(false);
-  const [pageCount, setPageCount] = useState<number>(0);
+  const [images, setImages] = useState<ConvertedImage[]>([]);
   const [completed, setCompleted] = useState<boolean>(false);
 
   const handleConvert = async () => {
@@ -38,38 +41,110 @@ export default function PdfToPngPage() {
       dispatch(setOperation("PDF를 PNG로 변환"));
       dispatch(setProgress(10));
 
+      // Dynamically import pdfjs-dist only on client side
+      const pdfjsLib = await import("pdfjs-dist");
+
+      // Configure worker (use local file)
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
       const file = files[0];
+
+      // Map quality to scale factor
+      const scaleMap = { low: 1.0, medium: 1.5, high: 2.0 };
+      const scale = scaleMap[quality];
+
+      // Read file as ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
 
-      dispatch(setProgress(40));
+      dispatch(setProgress(20));
 
-      const pages = pdfDoc.getPageCount();
-      setPageCount(pages);
+      // Load PDF document
+      const loadingTask = pdfjsLib.getDocument({
+        data: arrayBuffer,
+      });
+      const pdf = await loadingTask.promise;
 
-      dispatch(setProgress(70));
+      dispatch(setProgress(30));
 
-      // Note: PDF to image conversion requires server-side processing
-      // This is a client-side demo that shows UI but doesn't actually convert
-      // In production, this would use pdf.js canvas rendering or PyMuPDF on server
-      // PNG supports transparency which JPG doesn't
+      const convertedImages: ConvertedImage[] = [];
+      const totalPages = pdf.numPages;
 
+      // Convert each page to image
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale });
+
+        // Create canvas
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        if (!context) {
+          throw new Error("Canvas context를 생성할 수 없습니다.");
+        }
+
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        // Render PDF page to canvas
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport,
+          intent: "display" as const,
+        };
+
+        await page.render(renderContext as any).promise;
+
+        // Convert canvas to data URL (PNG format - supports transparency)
+        const dataUrl = canvas.toDataURL("image/png");
+
+        convertedImages.push({
+          page: pageNum,
+          dataUrl,
+        });
+
+        // Update progress
+        const progress = 30 + (pageNum / totalPages) * 60;
+        dispatch(setProgress(Math.round(progress)));
+      }
+
+      dispatch(setProgress(95));
+
+      setImages(convertedImages);
       setCompleted(true);
 
       dispatch(setProgress(100));
     } catch (error) {
       console.error("PDF to PNG 변환 오류:", error);
-      dispatch(setError("PDF to PNG 변환 중 오류가 발생했습니다."));
+      dispatch(
+        setError(
+          error instanceof Error
+            ? error.message
+            : "PDF to PNG 변환 중 오류가 발생했습니다.",
+        ),
+      );
     } finally {
       dispatch(setProcessing(false));
     }
   };
 
+  const handleDownloadImage = (dataUrl: string, pageNumber: number) => {
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = `page-${pageNumber}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadAll = () => {
+    images.forEach((image) => {
+      handleDownloadImage(image.dataUrl, image.page);
+    });
+  };
+
   const handleReset = () => {
     dispatch(resetState());
     setQuality("high");
-    setTransparent(false);
-    setPageCount(0);
+    setImages([]);
     setCompleted(false);
   };
 
@@ -137,21 +212,13 @@ export default function PdfToPngPage() {
                 </div>
               </div>
 
-              {/* Transparency Option */}
-              <div className="flex items-center gap-2">
-                <input
-                  id="transparent"
-                  type="checkbox"
-                  checked={transparent}
-                  onChange={(e) => setTransparent(e.target.checked)}
-                  className="w-4 h-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                />
-                <label
-                  htmlFor="transparent"
-                  className="text-sm text-muted-foreground cursor-pointer"
-                >
-                  투명 배경 (PNG만 가능)
-                </label>
+              {/* PNG Advantage Notice */}
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>💡 PNG 형식의 장점:</strong> PNG는 투명도를 지원하며
+                  무손실 압축을 사용합니다. JPG보다 파일 크기가 클 수 있지만
+                  품질이 더 좋습니다.
+                </p>
               </div>
 
               {/* Info */}
@@ -162,7 +229,8 @@ export default function PdfToPngPage() {
                 <ul className="text-xs text-muted-foreground space-y-1 ml-4 list-disc">
                   <li>모든 페이지가 개별 PNG 파일로 변환됩니다</li>
                   <li>PNG는 투명도를 지원하여 배경 제거가 가능합니다</li>
-                  <li>변환된 이미지는 ZIP 파일로 다운로드됩니다</li>
+                  <li>무손실 압축으로 원본 품질을 유지합니다</li>
+                  <li>변환된 이미지는 개별 다운로드하거나 일괄 다운로드할 수 있습니다</li>
                 </ul>
               </div>
 
@@ -181,35 +249,64 @@ export default function PdfToPngPage() {
 
           <ProcessingProgress />
 
-          {completed && (
+          {completed && images.length > 0 && (
             <Card className="p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                  <Image className="w-5 h-5 text-success" aria-hidden="true" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                    <Image
+                      className="w-5 h-5 text-success"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">변환 완료!</p>
+                    <p className="text-sm text-muted-foreground">
+                      {images.length}개 페이지가 PNG로 변환되었습니다
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-foreground">변환 완료!</p>
-                  <p className="text-sm text-muted-foreground">
-                    {pageCount}개의 페이지가 발견되었습니다
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-surface rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  실제 PDF to PNG 변환은 서버 처리가 필요합니다.
-                  <br />
-                  pdf.js (Canvas 렌더링) 또는 PyMuPDF를 사용하여 서버에서 처리할
-                  수 있습니다.
-                  <br />
-                  PNG 형식은 무손실 압축과 투명도를 지원합니다.
-                </p>
-              </div>
-
-              <div className="flex justify-center gap-3">
-                <Button disabled className="opacity-50">
-                  이미지 다운로드 (서버 필요)
+                <Button onClick={handleDownloadAll} variant="default">
+                  <Download className="w-4 h-4 mr-2" />
+                  전체 다운로드
                 </Button>
+              </div>
+
+              {/* Image Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {images.map((image) => (
+                  <Card
+                    key={image.page}
+                    className="p-3 space-y-2 hover:shadow-lg transition-shadow"
+                  >
+                    <div className="aspect-[3/4] relative overflow-hidden rounded bg-surface">
+                      <img
+                        src={image.dataUrl}
+                        alt={`Page ${image.page}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">
+                        페이지 {image.page}
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          handleDownloadImage(image.dataUrl, image.page)
+                        }
+                        className="h-7 px-2"
+                      >
+                        <Download className="w-3 h-3 mr-1" />
+                        <span className="text-xs">PNG</span>
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="flex justify-center">
                 <Button variant="outline" onClick={handleReset}>
                   다시 시작
                 </Button>

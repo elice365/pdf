@@ -62,7 +62,7 @@ export default function CompressPdfPage() {
 
       dispatch(setProgress(90));
 
-      const blob = new Blob([Buffer.from(compressedBytes)], {
+      const blob = new Blob([compressedBytes.buffer as ArrayBuffer], {
         type: "application/pdf",
       });
 

@@ -135,7 +135,7 @@ export default function OrganizePdfPage() {
       dispatch(setProgress(95));
 
       const organizedBytes = await newPdf.save();
-      const blob = new Blob([Buffer.from(organizedBytes)], {
+      const blob = new Blob([organizedBytes.buffer as ArrayBuffer], {
         type: "application/pdf",
       });
 

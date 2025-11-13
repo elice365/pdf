@@ -113,7 +113,7 @@ export default function SplitPdfPage() {
       dispatch(setProgress(90));
 
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([Buffer.from(pdfBytes)], {
+      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], {
         type: "application/pdf",
       });
 
