@@ -15,7 +15,28 @@ export function DownloadButton({
   disabled = false,
   className,
 }: DownloadButtonProps) {
-  const { processedFile, isProcessing } = useAppSelector((state) => state.pdf);
+  const { processedFile, isProcessing, files } = useAppSelector(
+    (state) => state.pdf,
+  );
+
+  // Generate filename with original name to prevent browser caching issues
+  const getFilename = () => {
+    if (files.length > 0 && files[0]?.name) {
+      const originalName = files[0].name.replace(/\.pdf$/i, "");
+      const suffix = filename.replace(/\.pdf$/i, "");
+
+      // If suffix is just "processed", use original name only
+      if (suffix === "processed") {
+        return `${originalName}.pdf`;
+      }
+
+      // Otherwise, combine original name with suffix
+      return `${originalName}-${suffix}.pdf`;
+    }
+
+    // Fallback to provided filename
+    return filename;
+  };
 
   const handleDownload = () => {
     if (!processedFile) return;
@@ -23,7 +44,7 @@ export function DownloadButton({
     const url = URL.createObjectURL(processedFile);
     const link = document.createElement("a");
     link.href = url;
-    link.download = filename;
+    link.download = getFilename();
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
