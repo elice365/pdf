@@ -3,6 +3,7 @@
 import { ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { DownloadButton } from "@/components/pdf/download-button";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
 import { Button } from "@/components/ui/button";
@@ -12,15 +13,14 @@ import {
   resetState,
   setError,
   setOperation,
+  setProcessedFile,
   setProcessing,
   setProgress,
 } from "@/store/slices/pdfSlice";
 
 export default function WordToPdfPage() {
   const dispatch = useAppDispatch();
-  const { files } = useAppSelector((state) => state.pdf);
-  const [fileName, setFileName] = useState<string>("");
-  const [completed, setCompleted] = useState<boolean>(false);
+  const { files, processedFile } = useAppSelector((state) => state.pdf);
 
   const handleConvert = async () => {
     if (files.length === 0) {
@@ -33,24 +33,66 @@ export default function WordToPdfPage() {
       dispatch(setOperation("Word를 PDF로 변환"));
       dispatch(setProgress(10));
 
+      // Dynamically import libraries
+      const mammoth = (await import("mammoth")).default;
+      const jsPDF = (await import("jspdf")).default;
+
       const file = files[0];
-      setFileName(file.name);
+      const arrayBuffer = await file.arrayBuffer();
 
-      dispatch(setProgress(40));
+      dispatch(setProgress(20));
 
-      // Note: Word to PDF conversion requires server-side processing
-      // This is a client-side demo that shows UI but doesn't actually convert
-      // In production, this would use LibreOffice, docx2pdf, or Microsoft API on server
-      // Preserves formatting, images, tables, and styles
+      // Convert DOCX to HTML using mammoth
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      const html = result.value;
+      const messages = result.messages;
 
-      dispatch(setProgress(70));
+      // Log any conversion warnings
+      if (messages.length > 0) {
+        console.warn("Mammoth conversion warnings:", messages);
+      }
 
-      setCompleted(true);
+      dispatch(setProgress(50));
+
+      // Create PDF from HTML
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Convert HTML to PDF
+      await new Promise<void>((resolve, reject) => {
+        doc.html(html, {
+          callback: () => {
+            resolve();
+          },
+          x: 10,
+          y: 10,
+          width: 190, // A4 width minus margins
+          windowWidth: 800,
+          html2canvas: {
+            scale: 0.264583, // Convert px to mm (1/96*25.4)
+          },
+        });
+      });
+
+      dispatch(setProgress(90));
+
+      // Save as Blob
+      const pdfBlob = doc.output("blob");
+      dispatch(setProcessedFile(pdfBlob));
 
       dispatch(setProgress(100));
     } catch (error) {
       console.error("Word to PDF 변환 오류:", error);
-      dispatch(setError("Word to PDF 변환 중 오류가 발생했습니다."));
+      dispatch(
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Word to PDF 변환 중 오류가 발생했습니다.",
+        ),
+      );
     } finally {
       dispatch(setProcessing(false));
     }
@@ -58,8 +100,6 @@ export default function WordToPdfPage() {
 
   const handleReset = () => {
     dispatch(resetState());
-    setFileName("");
-    setCompleted(false);
   };
 
   return (
@@ -95,22 +135,23 @@ export default function WordToPdfPage() {
               accept={{
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
                   [".docx"],
-                "application/msword": [".doc"],
               }}
             />
           </Card>
 
-          {files.length > 0 && !completed && (
+          {files.length > 0 && !processedFile && (
             <Card className="p-6 space-y-6">
-              {/* Info */}
               <div className="p-4 bg-surface rounded-lg space-y-2">
                 <p className="text-sm font-medium text-foreground">
-                  PDF 변환 정보
+                  변환 정보
                 </p>
                 <ul className="text-xs text-muted-foreground space-y-1 ml-4 list-disc">
-                  <li>Word 문서를 고품질 PDF로 변환합니다</li>
-                  <li>서식, 이미지, 표, 스타일이 보존됩니다</li>
-                  <li>DOC 및 DOCX 형식을 지원합니다</li>
+                  <li>Word 문서(.docx)를 PDF로 변환합니다</li>
+                  <li>텍스트 서식과 기본 레이아웃이 유지됩니다</li>
+                  <li>이미지와 테이블이 포함됩니다</li>
+                  <li>
+                    복잡한 레이아웃은 일부 손실될 수 있습니다 (클라이언트 처리)
+                  </li>
                 </ul>
               </div>
 
@@ -129,8 +170,8 @@ export default function WordToPdfPage() {
 
           <ProcessingProgress />
 
-          {completed && (
-            <Card className="p-6 space-y-4">
+          {processedFile && (
+            <Card className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
                   <FileText
@@ -141,27 +182,20 @@ export default function WordToPdfPage() {
                 <div>
                   <p className="font-medium text-foreground">변환 완료!</p>
                   <p className="text-sm text-muted-foreground">
-                    {fileName} 파일이 변환되었습니다
+                    Word가 PDF로 변환되었습니다
                   </p>
                 </div>
               </div>
-
-              <div className="p-4 bg-surface rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  실제 Word to PDF 변환은 서버 처리가 필요합니다.
-                  <br />
-                  LibreOffice, docx2pdf 또는 Microsoft API를 사용하여 서버에서
-                  처리할 수 있습니다.
-                  <br />
-                  문서 서식과 레이아웃을 정확히 보존하여 PDF로 변환합니다.
-                </p>
-              </div>
-
-              <div className="flex justify-center gap-3">
-                <Button disabled className="opacity-50">
-                  PDF 다운로드 (서버 필요)
-                </Button>
-                <Button variant="outline" onClick={handleReset}>
+              <div className="flex gap-3 w-full sm:w-auto">
+                <DownloadButton
+                  filename="converted.pdf"
+                  className="flex-1 sm:flex-initial"
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleReset}
+                  className="flex-1 sm:flex-initial"
+                >
                   다시 시작
                 </Button>
               </div>

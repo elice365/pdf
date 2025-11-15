@@ -3,6 +3,7 @@
 import { ArrowLeft, FileSpreadsheet } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { DownloadButton } from "@/components/pdf/download-button";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
 import { Button } from "@/components/ui/button";
@@ -12,15 +13,16 @@ import {
   resetState,
   setError,
   setOperation,
+  setProcessedFile,
   setProcessing,
   setProgress,
 } from "@/store/slices/pdfSlice";
 
 export default function ExcelToPdfPage() {
   const dispatch = useAppDispatch();
-  const { files } = useAppSelector((state) => state.pdf);
-  const [fileName, setFileName] = useState<string>("");
-  const [completed, setCompleted] = useState<boolean>(false);
+  const { files, processedFile } = useAppSelector((state) => state.pdf);
+  const [sheetNames, setSheetNames] = useState<string[]>([]);
+  const [selectedSheet, setSelectedSheet] = useState<string>("");
 
   const handleConvert = async () => {
     if (files.length === 0) {
@@ -33,24 +35,100 @@ export default function ExcelToPdfPage() {
       dispatch(setOperation("Excel을 PDF로 변환"));
       dispatch(setProgress(10));
 
+      // Dynamically import libraries
+      const XLSX = await import("xlsx");
+      const jsPDF = (await import("jspdf")).default;
+      const autoTable = (await import("jspdf-autotable")).default;
+
       const file = files[0];
-      setFileName(file.name);
+      const arrayBuffer = await file.arrayBuffer();
+
+      dispatch(setProgress(20));
+
+      // Read Excel file
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+      // Get sheet names
+      const sheets = workbook.SheetNames;
+      setSheetNames(sheets);
+
+      // Use selected sheet or first sheet
+      const sheetName = selectedSheet || sheets[0];
+      const worksheet = workbook.Sheets[sheetName];
 
       dispatch(setProgress(40));
 
-      // Note: Excel to PDF conversion requires server-side processing
-      // This is a client-side demo that shows UI but doesn't actually convert
-      // In production, this would use LibreOffice, openpyxl + reportlab, or Microsoft API
-      // Preserves cell formatting, formulas, charts, and multiple sheets
+      // Convert to JSON
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+        header: 1,
+        raw: false,
+        defval: "",
+      }) as any[][];
 
-      dispatch(setProgress(70));
+      if (jsonData.length === 0) {
+        throw new Error("시트가 비어있습니다.");
+      }
 
-      setCompleted(true);
+      dispatch(setProgress(60));
+
+      // Create PDF
+      const doc = new jsPDF({
+        orientation: jsonData[0]?.length > 6 ? "landscape" : "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Add title
+      doc.setFontSize(16);
+      doc.text(sheetName, 14, 15);
+
+      // Prepare table data
+      const headers = jsonData[0] as string[];
+      const body = jsonData.slice(1);
+
+      // Add table using autoTable
+      (doc as any).autoTable({
+        head: [headers],
+        body: body,
+        startY: 25,
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+          overflow: "linebreak",
+          valign: "middle",
+          halign: "left",
+        },
+        headStyles: {
+          fillColor: [229, 50, 45], // Primary color
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          halign: "center",
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+        },
+        margin: { top: 25, left: 14, right: 14, bottom: 14 },
+        theme: "grid",
+        tableWidth: "auto",
+        columnStyles: {},
+      });
+
+      dispatch(setProgress(90));
+
+      // Save as Blob
+      const pdfBlob = doc.output("blob");
+      dispatch(setProcessedFile(pdfBlob));
 
       dispatch(setProgress(100));
     } catch (error) {
       console.error("Excel to PDF 변환 오류:", error);
-      dispatch(setError("Excel to PDF 변환 중 오류가 발생했습니다."));
+      dispatch(
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Excel to PDF 변환 중 오류가 발생했습니다.",
+        ),
+      );
     } finally {
       dispatch(setProcessing(false));
     }
@@ -58,8 +136,8 @@ export default function ExcelToPdfPage() {
 
   const handleReset = () => {
     dispatch(resetState());
-    setFileName("");
-    setCompleted(false);
+    setSheetNames([]);
+    setSelectedSheet("");
   };
 
   return (
@@ -103,17 +181,45 @@ export default function ExcelToPdfPage() {
             />
           </Card>
 
-          {files.length > 0 && !completed && (
+          {files.length > 0 && !processedFile && (
             <Card className="p-6 space-y-6">
-              {/* Info */}
+              {sheetNames.length > 0 && (
+                <div>
+                  <label
+                    htmlFor="sheetSelect"
+                    className="text-sm font-medium block mb-2"
+                  >
+                    시트 선택 (선택사항)
+                  </label>
+                  <select
+                    id="sheetSelect"
+                    value={selectedSheet}
+                    onChange={(e) => setSelectedSheet(e.target.value)}
+                    className="w-full px-4 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    {sheetNames.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    선택하지 않으면 첫 번째 시트가 변환됩니다
+                  </p>
+                </div>
+              )}
+
               <div className="p-4 bg-surface rounded-lg space-y-2">
                 <p className="text-sm font-medium text-foreground">
-                  PDF 변환 정보
+                  변환 정보
                 </p>
                 <ul className="text-xs text-muted-foreground space-y-1 ml-4 list-disc">
-                  <li>Excel 스프레드시트를 고품질 PDF로 변환합니다</li>
-                  <li>셀 서식, 차트, 수식이 보존됩니다</li>
-                  <li>여러 시트는 별도 페이지로 변환됩니다</li>
+                  <li>Excel 데이터가 테이블 형식의 PDF로 변환됩니다</li>
+                  <li>기본 서식과 테이블 레이아웃이 유지됩니다</li>
+                  <li>여러 시트가 있는 경우 하나씩 선택하여 변환하세요</li>
+                  <li>
+                    복잡한 차트나 이미지는 변환되지 않습니다 (데이터만)
+                  </li>
                 </ul>
               </div>
 
@@ -132,8 +238,8 @@ export default function ExcelToPdfPage() {
 
           <ProcessingProgress />
 
-          {completed && (
-            <Card className="p-6 space-y-4">
+          {processedFile && (
+            <Card className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
                   <FileSpreadsheet
@@ -144,28 +250,20 @@ export default function ExcelToPdfPage() {
                 <div>
                   <p className="font-medium text-foreground">변환 완료!</p>
                   <p className="text-sm text-muted-foreground">
-                    {fileName} 파일이 변환되었습니다
+                    Excel이 PDF로 변환되었습니다
                   </p>
                 </div>
               </div>
-
-              <div className="p-4 bg-surface rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  실제 Excel to PDF 변환은 서버 처리가 필요합니다.
-                  <br />
-                  LibreOffice, openpyxl + reportlab 또는 Microsoft API를
-                  사용하여 서버에서 처리할 수 있습니다.
-                  <br />
-                  스프레드시트 서식과 레이아웃을 정확히 보존하여 PDF로
-                  변환합니다.
-                </p>
-              </div>
-
-              <div className="flex justify-center gap-3">
-                <Button disabled className="opacity-50">
-                  PDF 다운로드 (서버 필요)
-                </Button>
-                <Button variant="outline" onClick={handleReset}>
+              <div className="flex gap-3 w-full sm:w-auto">
+                <DownloadButton
+                  filename="converted.pdf"
+                  className="flex-1 sm:flex-initial"
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleReset}
+                  className="flex-1 sm:flex-initial"
+                >
                   다시 시작
                 </Button>
               </div>
