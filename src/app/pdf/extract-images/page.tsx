@@ -1,8 +1,7 @@
 "use client";
 
-import { ArrowLeft, Image } from "lucide-react";
+import { ArrowLeft, Download, Image } from "lucide-react";
 import Link from "next/link";
-import { PDFDocument } from "pdf-lib";
 import { useState } from "react";
 import { FileUpload } from "@/components/pdf/file-upload";
 import { ProcessingProgress } from "@/components/pdf/processing-progress";
@@ -17,10 +16,17 @@ import {
   setProgress,
 } from "@/store/slices/pdfSlice";
 
+interface ExtractedImage {
+  pageNumber: number;
+  dataUrl: string;
+  width: number;
+  height: number;
+}
+
 export default function ExtractImagesPage() {
   const dispatch = useAppDispatch();
   const { files } = useAppSelector((state) => state.pdf);
-  const [imageCount, setImageCount] = useState<number>(0);
+  const [extractedImages, setExtractedImages] = useState<ExtractedImage[]>([]);
   const [completed, setCompleted] = useState<boolean>(false);
 
   const handleExtractImages = async () => {
@@ -34,25 +40,62 @@ export default function ExtractImagesPage() {
       dispatch(setOperation("이미지 추출"));
       dispatch(setProgress(10));
 
+      // Dynamically import pdfjs-dist and JSZip
+      const pdfjsLib = await import("pdfjs-dist");
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
       const file = files[0];
       const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
 
-      dispatch(setProgress(40));
+      dispatch(setProgress(20));
 
-      // Note: Image extraction from PDF requires server-side processing
-      // pdf-lib doesn't support image extraction in browser
-      // This is a client-side demo that shows UI but doesn't actually extract images
-      // In production, this would call a server API with libraries like PyMuPDF or pdf2image
+      // Load PDF
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
 
-      const pageCount = pdfDoc.getPageCount();
+      dispatch(setProgress(30));
 
-      dispatch(setProgress(70));
+      const totalPages = pdf.numPages;
+      const images: ExtractedImage[] = [];
 
-      // Show placeholder count
-      setImageCount(pageCount * 2); // Placeholder: assume 2 images per page
+      // Extract images from each page
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2.0 }); // High quality
+
+        // Create canvas
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        if (!context) {
+          throw new Error("Canvas context를 생성할 수 없습니다.");
+        }
+
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        // Render PDF page to canvas
+        await page.render({
+          canvasContext: context,
+          viewport: viewport,
+        } as any).promise;
+
+        // Convert canvas to data URL (PNG format)
+        const dataUrl = canvas.toDataURL("image/png");
+
+        images.push({
+          pageNumber: pageNum,
+          dataUrl,
+          width: viewport.width,
+          height: viewport.height,
+        });
+
+        // Update progress
+        const progress = 30 + (pageNum / totalPages) * 60;
+        dispatch(setProgress(Math.round(progress)));
+      }
+
+      setExtractedImages(images);
       setCompleted(true);
-
       dispatch(setProgress(100));
     } catch (error) {
       console.error("이미지 추출 오류:", error);
@@ -62,9 +105,57 @@ export default function ExtractImagesPage() {
     }
   };
 
+  const handleDownloadZip = async () => {
+    try {
+      // Dynamically import JSZip
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+
+      // Add each image to ZIP
+      for (const image of extractedImages) {
+        // Convert data URL to blob
+        const base64Data = image.dataUrl.split(",")[1];
+        const binaryData = atob(base64Data);
+        const bytes = new Uint8Array(binaryData.length);
+        for (let i = 0; i < binaryData.length; i++) {
+          bytes[i] = binaryData.charCodeAt(i);
+        }
+
+        zip.file(`page-${image.pageNumber}.png`, bytes);
+      }
+
+      // Generate ZIP file
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+
+      // Download ZIP
+      const url = URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      const originalFilename = files[0]?.name?.replace(/\.pdf$/i, "") || "pdf";
+      link.download = `${originalFilename}-images.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("ZIP 생성 오류:", error);
+      dispatch(setError("ZIP 파일 생성 중 오류가 발생했습니다."));
+    }
+  };
+
+  const handleDownloadSingle = (image: ExtractedImage) => {
+    const link = document.createElement("a");
+    link.href = image.dataUrl;
+    const originalFilename = files[0]?.name?.replace(/\.pdf$/i, "") || "pdf";
+    link.download = `${originalFilename}-page-${image.pageNumber}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleReset = () => {
     dispatch(resetState());
-    setImageCount(0);
+    setExtractedImages([]);
     setCompleted(false);
   };
 
@@ -88,7 +179,7 @@ export default function ExtractImagesPage() {
                 이미지 추출
               </h1>
               <p className="text-muted-foreground mt-1">
-                PDF에서 이미지를 추출하세요
+                PDF의 각 페이지를 이미지로 추출하세요
               </p>
             </div>
           </div>
@@ -107,9 +198,9 @@ export default function ExtractImagesPage() {
                   이미지 추출 정보
                 </p>
                 <ul className="text-xs text-muted-foreground space-y-1 ml-4 list-disc">
-                  <li>PDF의 모든 페이지에서 이미지를 추출합니다</li>
-                  <li>추출된 이미지는 원본 품질로 저장됩니다</li>
-                  <li>이미지 형식: JPEG, PNG</li>
+                  <li>PDF의 모든 페이지를 고해상도 PNG 이미지로 변환합니다</li>
+                  <li>각 페이지는 개별 PNG 파일로 저장됩니다</li>
+                  <li>모든 이미지를 ZIP 파일로 한번에 다운로드할 수 있습니다</li>
                 </ul>
               </div>
 
@@ -120,7 +211,7 @@ export default function ExtractImagesPage() {
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <Image className="w-5 h-5 mr-2" />
-                  이미지 추출
+                  이미지 추출 시작
                 </Button>
               </div>
             </Card>
@@ -128,40 +219,72 @@ export default function ExtractImagesPage() {
 
           <ProcessingProgress />
 
-          {completed && (
-            <Card className="p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                  <Image className="w-5 h-5 text-success" aria-hidden="true" />
+          {completed && extractedImages.length > 0 && (
+            <div className="space-y-4">
+              <Card className="p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                      <Image
+                        className="w-5 h-5 text-success"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">추출 완료!</p>
+                      <p className="text-sm text-muted-foreground">
+                        {extractedImages.length}개의 이미지가 추출되었습니다
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button onClick={handleDownloadZip}>
+                      <Download className="w-4 h-4 mr-2" />
+                      모두 다운로드 (ZIP)
+                    </Button>
+                    <Button variant="outline" onClick={handleReset}>
+                      다시 시작
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-foreground">추출 완료!</p>
-                  <p className="text-sm text-muted-foreground">
-                    {imageCount}개의 이미지가 발견되었습니다
-                  </p>
-                </div>
-              </div>
+              </Card>
 
-              <div className="p-4 bg-surface rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  실제 이미지 추출은 서버 처리가 필요합니다.
-                  <br />
-                  PyMuPDF 또는 pdf2image 라이브러리를 사용하여 서버에서 처리할
-                  수 있습니다.
-                  <br />
-                  추출된 이미지는 ZIP 파일로 다운로드할 수 있습니다.
-                </p>
+              {/* Image Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {extractedImages.map((image) => (
+                  <Card
+                    key={image.pageNumber}
+                    className="p-4 space-y-3 hover:shadow-lg transition-shadow"
+                  >
+                    <div className="aspect-[3/4] relative bg-surface rounded overflow-hidden">
+                      <img
+                        src={image.dataUrl}
+                        alt={`페이지 ${image.pageNumber}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm">
+                        <p className="font-medium text-foreground">
+                          페이지 {image.pageNumber}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {image.width} × {image.height}px
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDownloadSingle(image)}
+                      >
+                        <Download className="w-3 h-3 mr-1" />
+                        다운로드
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
               </div>
-
-              <div className="flex justify-center gap-3">
-                <Button disabled className="opacity-50">
-                  이미지 다운로드 (서버 필요)
-                </Button>
-                <Button variant="outline" onClick={handleReset}>
-                  다시 시작
-                </Button>
-              </div>
-            </Card>
+            </div>
           )}
         </div>
       </div>
