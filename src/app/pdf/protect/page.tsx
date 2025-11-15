@@ -58,12 +58,25 @@ export default function ProtectPdfPage() {
 
       dispatch(setProgress(40));
 
-      // Note: PDF encryption requires server-side processing
-      // This is a client-side demo that shows UI but doesn't actually encrypt
-      // In production, this would call a server API to encrypt the PDF
-
-      // For now, just save the PDF without encryption
+      // Note: pdf-lib in the browser doesn't support PDF encryption
+      // PDF encryption requires cryptographic operations that are not
+      // implemented in the current pdf-lib browser build
+      //
+      // Alternatives:
+      // - Server-side: Use PyPDF2, qpdf, or Apache PDFBox
+      // - Browser: Use pdf.js encryption (limited support)
+      //
+      // For now, we save the PDF without encryption and inform the user
       const pdfBytes = await pdfDoc.save();
+
+      dispatch(setProgress(70));
+
+      // Inform user that encryption is not applied
+      throw new Error(
+        "PDF 암호화는 브라우저에서 지원되지 않습니다. " +
+          "서버 기반 도구(PyPDF2, qpdf, Apache PDFBox)를 사용하거나, " +
+          "Adobe Acrobat과 같은 전문 도구를 사용하세요.",
+      );
 
       dispatch(setProgress(90));
 

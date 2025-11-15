@@ -46,27 +46,41 @@ export default function UnlockPdfPage() {
 
       dispatch(setProgress(40));
 
-      // Note: PDF decryption requires server-side processing
-      // This is a client-side demo that shows UI but doesn't actually decrypt
-      // In production, this would call a server API with the password
-
-      // Try to load the PDF (will fail if password-protected)
+      // Note: pdf-lib in the browser doesn't support PDF decryption
+      // PDF decryption requires cryptographic operations that are not
+      // fully implemented in the current pdf-lib browser build
+      //
+      // Try to load the PDF to check if it's encrypted
       try {
-        const pdfDoc = await PDFDocument.load(arrayBuffer);
-        const pdfBytes = await pdfDoc.save();
-
-        dispatch(setProgress(90));
-
-        const blob = new Blob([Buffer.from(pdfBytes)], {
-          type: "application/pdf",
+        const pdfDoc = await PDFDocument.load(arrayBuffer, {
+          ignoreEncryption: true,
         });
 
-        dispatch(setProcessedFile(blob));
-        dispatch(setProgress(100));
-      } catch (_loadError) {
+        dispatch(setProgress(60));
+
+        // If we can load it with ignoreEncryption, it might not be encrypted
+        // or the encryption is ignored (content still encrypted)
+        const pdfBytes = await pdfDoc.save();
+
+        dispatch(setProgress(70));
+
+        // Inform user about limitation
+        throw new Error(
+          "PDF 복호화는 브라우저에서 지원되지 않습니다. " +
+            "서버 기반 도구(qpdf, PyPDF2, Apache PDFBox)를 사용하거나, " +
+            "Adobe Acrobat과 같은 전문 도구를 사용하세요.",
+        );
+      } catch (loadError) {
+        console.error("PDF 로드 오류:", loadError);
+        const errorMessage =
+          loadError instanceof Error ? loadError.message : String(loadError);
+
+        // Re-throw the error message
         dispatch(
           setError(
-            "비밀번호가 틀렸거나 PDF가 손상되었습니다. 실제 복호화는 서버 처리가 필요합니다.",
+            errorMessage.includes("브라우저")
+              ? errorMessage
+              : "PDF 파일을 로드할 수 없습니다. 암호화된 PDF는 브라우저에서 복호화할 수 없습니다.",
           ),
         );
       }
