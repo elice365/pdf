@@ -44,49 +44,79 @@ export default function UnlockPdfPage() {
       const file = files[0];
       const arrayBuffer = await file.arrayBuffer();
 
+      dispatch(setProgress(30));
+
+      // Use pdfjs-dist to verify password and decrypt
+      const pdfjsLib = await import("pdfjs-dist");
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
       dispatch(setProgress(40));
 
-      // Note: pdf-lib in the browser doesn't support PDF decryption
-      // PDF decryption requires cryptographic operations that are not
-      // fully implemented in the current pdf-lib browser build
-      //
-      // Try to load the PDF to check if it's encrypted
+      const loadingTask = pdfjsLib.getDocument({
+        data: arrayBuffer,
+        password: password,
+      });
+
       try {
+        const pdf = await loadingTask.promise;
+
+        dispatch(setProgress(60));
+
+        // Password is correct, now load with pdf-lib to save unlocked version
         const pdfDoc = await PDFDocument.load(arrayBuffer, {
           ignoreEncryption: true,
         });
 
-        dispatch(setProgress(60));
+        dispatch(setProgress(80));
 
-        // If we can load it with ignoreEncryption, it might not be encrypted
-        // or the encryption is ignored (content still encrypted)
+        // Save without encryption
         const pdfBytes = await pdfDoc.save();
 
-        dispatch(setProgress(70));
+        dispatch(setProgress(95));
 
-        // Inform user about limitation
-        throw new Error(
-          "PDF 복호화는 브라우저에서 지원되지 않습니다. " +
-            "서버 기반 도구(qpdf, PyPDF2, Apache PDFBox)를 사용하거나, " +
-            "Adobe Acrobat과 같은 전문 도구를 사용하세요.",
-        );
-      } catch (loadError) {
+        const blob = new Blob([Buffer.from(pdfBytes)], {
+          type: "application/pdf",
+        });
+        dispatch(setProcessedFile(blob));
+
+        dispatch(setProgress(100));
+      } catch (loadError: unknown) {
         console.error("PDF 로드 오류:", loadError);
-        const errorMessage =
-          loadError instanceof Error ? loadError.message : String(loadError);
 
-        // Re-throw the error message
-        dispatch(
-          setError(
-            errorMessage.includes("브라우저")
-              ? errorMessage
-              : "PDF 파일을 로드할 수 없습니다. 암호화된 PDF는 브라우저에서 복호화할 수 없습니다.",
-          ),
-        );
+        // Check for password error
+        if (
+          loadError &&
+          typeof loadError === "object" &&
+          "name" in loadError &&
+          loadError.name === "PasswordException"
+        ) {
+          dispatch(
+            setError(
+              "비밀번호가 틀렸습니다. 올바른 비밀번호를 입력해주세요.",
+            ),
+          );
+        } else if (
+          loadError &&
+          typeof loadError === "object" &&
+          "name" in loadError &&
+          loadError.name === "MissingPDFException"
+        ) {
+          dispatch(setError("유효하지 않은 PDF 파일입니다."));
+        } else {
+          const errorMessage =
+            loadError instanceof Error ? loadError.message : String(loadError);
+          dispatch(
+            setError(
+              `PDF 잠금 해제 중 오류가 발생했습니다: ${errorMessage}`,
+            ),
+          );
+        }
       }
     } catch (error) {
       console.error("PDF 잠금 해제 오류:", error);
-      dispatch(setError("PDF 잠금 해제 중 오류가 발생했습니다."));
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      dispatch(setError(`PDF 잠금 해제 중 오류가 발생했습니다: ${errorMessage}`));
     } finally {
       dispatch(setProcessing(false));
     }

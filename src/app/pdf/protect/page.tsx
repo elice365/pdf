@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Lock } from "lucide-react";
 import Link from "next/link";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument } from "pdf-lib-with-encrypt";
 import { useState } from "react";
 import { DownloadButton } from "@/components/pdf/download-button";
 import { FileUpload } from "@/components/pdf/file-upload";
@@ -54,29 +54,34 @@ export default function ProtectPdfPage() {
 
       const file = files[0];
       const arrayBuffer = await file.arrayBuffer();
+
+      dispatch(setProgress(30));
+
       const pdfDoc = await PDFDocument.load(arrayBuffer);
 
-      dispatch(setProgress(40));
+      dispatch(setProgress(50));
 
-      // Note: pdf-lib in the browser doesn't support PDF encryption
-      // PDF encryption requires cryptographic operations that are not
-      // implemented in the current pdf-lib browser build
-      //
-      // Alternatives:
-      // - Server-side: Use PyPDF2, qpdf, or Apache PDFBox
-      // - Browser: Use pdf.js encryption (limited support)
-      //
-      // For now, we save the PDF without encryption and inform the user
-      const pdfBytes = await pdfDoc.save();
+      // Apply encryption with pdf-lib-with-encrypt
+      pdfDoc.encrypt({
+        userPassword: password,
+        ownerPassword: password,
+        permissions: {
+          printing: "highResolution",
+          modifying: false,
+          copying: false,
+          annotating: false,
+          fillingForms: false,
+          contentAccessibility: true,
+          documentAssembly: false,
+        },
+      });
 
       dispatch(setProgress(70));
 
-      // Inform user that encryption is not applied
-      throw new Error(
-        "PDF 암호화는 브라우저에서 지원되지 않습니다. " +
-          "서버 기반 도구(PyPDF2, qpdf, Apache PDFBox)를 사용하거나, " +
-          "Adobe Acrobat과 같은 전문 도구를 사용하세요.",
-      );
+      // Save with encryption (must use useObjectStreams: false for Adobe compatibility)
+      const pdfBytes = await pdfDoc.save({
+        useObjectStreams: false,
+      });
 
       dispatch(setProgress(90));
 
@@ -88,7 +93,9 @@ export default function ProtectPdfPage() {
       dispatch(setProgress(100));
     } catch (error) {
       console.error("PDF 보호 오류:", error);
-      dispatch(setError("PDF 보호 중 오류가 발생했습니다."));
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      dispatch(setError(`PDF 보호 중 오류가 발생했습니다: ${errorMessage}`));
     } finally {
       dispatch(setProcessing(false));
     }
